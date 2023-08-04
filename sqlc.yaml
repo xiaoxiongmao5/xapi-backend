@@ -1,0 +1,14 @@
+version: 2
+sql:
+  - engine: "mysql"
+    # 包含数据库迁移文件的目录
+    schema: "./sql/migration"
+    # 指定在哪里查找 SQL 查询语句
+    queries: "./sql/query"
+    # emit_json_tags: true
+    gen:
+      go:
+        #生成文件目录
+        package: "dbsq"
+        out: "dbsq"
+      
