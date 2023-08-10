@@ -7,20 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"xj/xapi-backend/models"
+	"xj/xapi-backend/myerror"
 	service_user "xj/xapi-backend/service/user"
 	"xj/xapi-backend/utils"
 
 	_ "github.com/go-sql-driver/mysql" //导入
 	// "log"
 )
-
-type ResCode map[int]string
-
-type _ResponsePostList[T any] struct {
-	Code    ResCode `json:"code"`    // 业务响应状态码
-	Message string  `json:"message"` // 提示信息
-	Data    T       `json:"data"`    // 数据
-}
 
 // @Summary		用户注册
 // @Description	用户注册
@@ -40,19 +33,13 @@ func UserRegister(c *gin.Context) {
 	var params *models.CreateUserParamsJSON
 	if err := c.ShouldBindJSON(&params); err != nil {
 		fmt.Printf("q.CreateUser err=%v \n", err.Error())
-		c.JSON(200, gin.H{
-			"result": 1,
-			"msg":    "参数错误",
-		})
+		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["ParameterError"], "参数错误"))
 		return
 	}
 	// 获取该账号是否存在过
 	_, err := service_user.GetUserInfo(params.Useraccount)
 	if err == nil {
-		c.JSON(200, gin.H{
-			"result": 1,
-			"msg":    "该账号名已被使用，请输入新的账号名",
-		})
+		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["UserExist"], "该账号名已被使用，请输入新的账号名"))
 		return
 	}
 	params.Userrole = "user"
@@ -60,10 +47,7 @@ func UserRegister(c *gin.Context) {
 	// fmt.Println("res=", res)
 	if err != nil {
 		fmt.Printf("service_user.CreateUser err=%v \n", err)
-		c.JSON(200, gin.H{
-			"result": 1,
-			"msg":    "账号创建失败",
-		})
+		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["CreateUserFailed"], "账号创建失败"))
 		return
 	}
 	c.JSON(200, gin.H{
@@ -88,10 +72,7 @@ func UserLogin(c *gin.Context) {
 	userInfo, err := service_user.GetUserInfo(useraccount)
 	if err != nil {
 		fmt.Printf("q.GetUserInfo err=%v \n", err)
-		c.JSON(200, gin.H{
-			"result": 1,
-			"msg":    "用户不存在",
-		})
+		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["UserNotExist"], "用户不存在"))
 		return
 	}
 	fmt.Printf("拿到用户信息了%v \n", userInfo)
@@ -99,10 +80,7 @@ func UserLogin(c *gin.Context) {
 	err = utils.ComparePassword(userInfo.Userpassword, userpassword)
 	if err != nil {
 		fmt.Printf("HashPassword err=%v \n", err)
-		c.JSON(200, gin.H{
-			"result": 1,
-			"msg":    "账号不存在或者密码验证错误",
-		})
+		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["UserPasswordError"], "账号不存在或者密码验证错误"))
 		return
 	}
 	c.JSON(200, gin.H{

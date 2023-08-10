@@ -5,6 +5,7 @@ import (
 	controller "xj/xapi-backend/controller/user"
 	"xj/xapi-backend/db"
 	_ "xj/xapi-backend/docs"
+	"xj/xapi-backend/myerror"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -12,7 +13,17 @@ import (
 )
 
 func init() {
+	myerror.ResponseCodes = map[string]int{
+		"Success":            0,
+		"ParameterError":     1001,
+		"AuthenticationFail": 1002,
+		"UserNotExist":       2001,
+		"UserExist":          2002,
+		"CreateUserFailed":   2003,
+		"UserPasswordError":  2004,
+	}
 	db.MyDB = db.ConnectionPool("root:@/xapi?charset=utf8&parseTime=true")
+
 }
 
 //	@title			xApi 项目
@@ -36,8 +47,29 @@ func main() {
 
 }
 
+func ErrorHandlerMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+
+		// 判断上层业务抛出的错误类型
+		if err := c.Errors.Last(); err != nil {
+			if abortError, ok := err.Err.(*myerror.AbortError); ok {
+				// 生成错误响应并终止请求处理
+				c.JSON(200, gin.H{
+					"result": abortError.Code,
+					"msg":    abortError.Message,
+				})
+				c.Abort()
+				return
+			}
+		}
+	}
+}
+
 func setupRouter() *gin.Engine {
 	r := gin.New()
+	// 使用自定义的中间件
+	r.Use(ErrorHandlerMiddleware())
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
