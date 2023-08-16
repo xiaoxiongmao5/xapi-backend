@@ -28,14 +28,19 @@ type ShowUserJSON struct {
 
 // 注册用户
 type CreateUserParamsJSON struct {
-	Username     sql.NullString `json:"username"`
-	Useraccount  string         `json:"useraccount"`
-	Useravatar   sql.NullString `json:"useravatar"`
-	Gender       int32          `json:"gender"`
-	Userrole     string         `json:"userrole"`
-	Userpassword string         `json:"userpassword"`
-	Accesskey    string         `json:"accesskey"`
-	Secretkey    string         `json:"secretkey"`
+	Username     string `json:"username"`
+	Useraccount  string `json:"useraccount"`
+	Useravatar   string `json:"useravatar"`
+	Gender       int32  `json:"gender"`
+	Userrole     string `json:"userrole"`
+	Userpassword string `json:"userpassword"`
+	Accesskey    string `json:"accesskey"`
+	Secretkey    string `json:"secretkey"`
+}
+
+type UserLoginParamsJSON struct {
+	Useraccount  string `json:"useraccount"`
+	Userpassword string `json:"userpassword"`
 }
 
 func ConvertToNormalUser(u *dbsq.User) *ShowUserJSON {
@@ -64,9 +69,15 @@ func ConvertToNormalUser(u *dbsq.User) *ShowUserJSON {
 
 func ConvertToCreateUserParamsJSON(jsonParams *CreateUserParamsJSON) *dbsq.CreateUserParams {
 	return &dbsq.CreateUserParams{
-		Username:    jsonParams.Username,
 		Useraccount: jsonParams.Useraccount,
-		Useravatar:  jsonParams.Useravatar,
+		Username: sql.NullString{
+			String: jsonParams.Username,
+			Valid:  true,
+		},
+		Useravatar: sql.NullString{
+			String: jsonParams.Useravatar,
+			Valid:  true,
+		},
 		Gender: sql.NullInt32{
 			Int32: jsonParams.Gender,
 			Valid: true,

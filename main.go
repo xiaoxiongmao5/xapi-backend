@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	controller "xj/xapi-backend/controller/user"
+	controller "xj/xapi-backend/controller"
 	"xj/xapi-backend/db"
 	_ "xj/xapi-backend/docs"
 	"xj/xapi-backend/myerror"
@@ -14,13 +14,14 @@ import (
 
 func init() {
 	myerror.ResponseCodes = map[string]int{
-		"Success":            0,
-		"ParameterError":     1001,
-		"AuthenticationFail": 1002,
-		"UserNotExist":       2001,
-		"UserExist":          2002,
-		"CreateUserFailed":   2003,
-		"UserPasswordError":  2004,
+		"Success":                0,
+		"ParameterError":         1001,
+		"AuthenticationFail":     1002,
+		"UserNotExist":           2001,
+		"UserExist":              2002,
+		"CreateUserFailed":       2003,
+		"UserPasswordError":      2004,
+		"GetInterfaceListFailed": 3001,
 	}
 	db.MyDB = db.ConnectionPool("root:@/xapi?charset=utf8&parseTime=true")
 
@@ -66,16 +67,48 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 	}
 }
 
+// CORSMiddleware 是处理跨域请求的中间件
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 设置允许跨域请求的来源域，这里需要设置为请求的 Origin
+		c.Writer.Header().Set("Access-Control-Allow-Origin", c.GetHeader("Origin"))
+
+		// 允许的 HTTP 方法
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+
+		// 允许的请求标头
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		// 允许携带 Cookie
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		// 如果是预检请求（OPTIONS 请求），直接返回成功状态
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(200)
+			return
+		}
+
+		c.Next()
+	}
+}
+
 func setupRouter() *gin.Engine {
 	r := gin.New()
-	// 使用自定义的中间件
+	// 使用自定义的中间件处理全局错误拦截
 	r.Use(ErrorHandlerMiddleware())
+	// 使用中间件来处理跨域请求，并允许携带 Cookie
+	r.Use(CORSMiddleware())
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	r.POST("/login", controller.UserLogin)
-	r.POST("/register", controller.UserRegister)
-	r.GET("/logout", controller.UserLogout)
+	userRouter := r.Group("/user")
+	userRouter.POST("/login", controller.UserLogin)
+	userRouter.POST("/register", controller.UserRegister)
+	userRouter.GET("/logout", controller.UserLogout)
+	userRouter.GET("/uinfo", controller.GetUserInfo)
+
+	interfaceRouter := r.Group("/interface")
+	interfaceRouter.GET("/list", controller.ListInterface)
 
 	return r
 }
