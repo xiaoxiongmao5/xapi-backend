@@ -8,10 +8,43 @@ import (
 	"xj/xapi-backend/models"
 )
 
-func CreateInterface(param *dbsq.CreateInterfaceParams) (sql.Result, error) {
+func GetInterfaceInfo(id int64) (*models.ValidXapiInterfaceInfo, error) {
 	q := dbsq.New(db.MyDB)
 	ctx := context.Background()
-	return q.CreateInterface(ctx, param)
+	data, err := q.GetInterfaceInfo(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	retdata := models.ConvertToValidXapiInterfaceInfo(data)
+	return retdata, nil
+}
+
+func CreateInterface(param *models.CreateInterfaceParams) (sql.Result, error) {
+	nparam := models.ConvertToCreateInterfaceParams(param)
+	q := dbsq.New(db.MyDB)
+	ctx := context.Background()
+	return q.CreateInterface(ctx, nparam)
+}
+
+func UpdateInterface(param *models.UpdateInterfaceParams) error {
+	_, err := GetInterfaceInfo(param.ID)
+	if err != nil {
+		return err
+	}
+	nparam := models.ConvertToUpdateInterfaceParams(param)
+	q := dbsq.New(db.MyDB)
+	ctx := context.Background()
+	return q.UpdateInterface(ctx, nparam)
+}
+
+func DeleteInterface(id int64) error {
+	q := dbsq.New(db.MyDB)
+	ctx := context.Background()
+	_, err := GetInterfaceInfo(id)
+	if err != nil {
+		return err
+	}
+	return q.DeleteInterface(ctx, id)
 }
 
 func ConvertSliceToValidXapiInterfaceInfo(slice []*dbsq.XapiInterfaceInfo) []*models.ValidXapiInterfaceInfo {

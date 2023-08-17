@@ -14,18 +14,18 @@ import (
 	// "log"
 )
 
-// @Summary		用户注册
-// @Description	用户注册
-// @Tags			用户相关
-// @Accept			application/json
-// @Produce		application/json
-// @Param			request	body		models.CreateUserParamsJSON	true	"注册信息"
-// @Success		200		{object}	object
-// @Router			/user/register [post]
+//	@Summary		用户注册
+//	@Description	用户注册
+//	@Tags			用户相关
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			request	body		models.CreateUserParamsJSON	true	"注册信息"
+//	@Success		200		{object}	object
+//	@Router			/user/register [post]
 func UserRegister(c *gin.Context) {
 	var params *models.CreateUserParamsJSON
 	if err := c.ShouldBindJSON(&params); err != nil {
-		fmt.Printf("q.CreateUser err=%v \n", err.Error())
+		fmt.Printf("param CreateUserParamsJSON err=%v \n", err.Error())
 		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["ParameterError"], "参数错误"))
 		return
 	}
@@ -49,12 +49,12 @@ func UserRegister(c *gin.Context) {
 	})
 }
 
-// @Summary		获得用户信息
-// @Description	根据用户的 Cookie 获取用户信息
-// @Tags			用户相关
-// @Produce		application/json
-// @Success		200	{object}	object	"用户信息"
-// @Router			/user/uinfo [get]
+//	@Summary		获得用户信息
+//	@Description	根据用户的 Cookie 获取用户信息
+//	@Tags			用户相关
+//	@Produce		application/json
+//	@Success		200	{object}	object	"用户信息"
+//	@Router			/user/uinfo [get]
 func GetUserInfo(c *gin.Context) {
 	// 从请求中获取 Cookie
 	cookie, err := c.Cookie("token")
@@ -81,14 +81,14 @@ func GetUserInfo(c *gin.Context) {
 	})
 }
 
-// @Summary		用户登录
-// @Description	用户登录
-// @Tags			用户相关
-// @Accept			application/x-www-form-urlencoded
-// @Produce		application/json
-// @Param			request	formData	models.UserLoginParamsJSON	true	"账号密码"
-// @Success		200		{object}	object
-// @Router			/user/login [post]
+//	@Summary		用户登录
+//	@Description	用户登录
+//	@Tags			用户相关
+//	@Accept			application/x-www-form-urlencoded
+//	@Produce		application/json
+//	@Param			request	formData	models.UserLoginParamsJSON	true	"账号密码"
+//	@Success		200		{object}	object
+//	@Router			/user/login [post]
 func UserLogin(c *gin.Context) {
 	useraccount := c.PostForm("useraccount")
 	userpassword := c.PostForm("userpassword")
@@ -117,12 +117,12 @@ func UserLogin(c *gin.Context) {
 	})
 }
 
-// @Summary		用户退出
-// @Description	用户退出
-// @Tags			用户相关
-// @Accept			application/json
-// @Produce		application/json
-// @Router			/user/logout [get]
+//	@Summary		用户退出
+//	@Description	用户退出
+//	@Tags			用户相关
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Router			/user/logout [get]
 func UserLogout(c *gin.Context) {
 	// 从请求中获取 Cookie
 	cookie, err := c.Cookie("token")

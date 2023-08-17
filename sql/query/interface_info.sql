@@ -21,6 +21,10 @@ insert into xapi.`interface_info` (
         ?, ?, ?, ?, ?, ?, 0, ?, ?
     );
 
+-- name: UpdateInterface :exec
+UPDATE xapi.`interface_info` set `name`=?, `description`=?, `url`=?, `requestParams`=?, `requestHeader`=?, `responseHeader`=?, `status`=?, `method`=?, `userId`=?
+WHERE id = ?;
+
 -- name: DeleteInterface :exec
 UPDATE xapi.`interface_info` set `isDelete` = 1 
 WHERE id = ?;

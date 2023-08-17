@@ -109,6 +109,9 @@ func setupRouter() *gin.Engine {
 
 	interfaceRouter := r.Group("/interface")
 	interfaceRouter.GET("/list", controller.ListInterface)
+	interfaceRouter.POST("/register", controller.CreateInterface)
+	interfaceRouter.POST("/update", controller.UpdateInterface)
+	interfaceRouter.GET("/delete", controller.DeleteInterface)
 
 	return r
 }

@@ -1,20 +1,34 @@
 package models
 
 import (
+	"database/sql"
 	"time"
 	"xj/xapi-backend/dbsq"
 )
 
-// type CreateInterfaceParams struct {
-// 	Name           string `json:"name"`
-// 	Description    string `json:"description"`
-// 	Url            string `json:"url"`
-// 	Requestparams  string `json:"requestparams"`
-// 	Requestheader  string `json:"requestheader"`
-// 	Responseheader string `json:"responseheader"`
-// 	Method         string `json:"method"`
-// 	Userid         int64  `json:"userid"`
-// }
+type CreateInterfaceParams struct {
+	Name           string `json:"name"`
+	Description    string `json:"description"`
+	Url            string `json:"url"`
+	Requestparams  string `json:"requestparams"`
+	Requestheader  string `json:"requestheader"`
+	Responseheader string `json:"responseheader"`
+	Method         string `json:"method"`
+	Userid         int64  `json:"userid"`
+}
+
+type UpdateInterfaceParams struct {
+	Name           string `json:"name"`
+	Description    string `json:"description"`
+	Url            string `json:"url"`
+	Requestparams  string `json:"requestparams"`
+	Requestheader  string `json:"requestheader"`
+	Responseheader string `json:"responseheader"`
+	Status         int32  `json:"status"`
+	Method         string `json:"method"`
+	Userid         int64  `json:"userid"`
+	ID             int64  `json:"id"`
+}
 
 // 接口信息
 type ValidXapiInterfaceInfo struct {
@@ -58,5 +72,50 @@ func ConvertToValidXapiInterfaceInfo(i *dbsq.XapiInterfaceInfo) *ValidXapiInterf
 		Userid:         i.Userid,
 		Createtime:     i.Createtime,
 		Updatetime:     i.Updatetime,
+	}
+}
+
+func ConvertToCreateInterfaceParams(jsonParams *CreateInterfaceParams) *dbsq.CreateInterfaceParams {
+	return &dbsq.CreateInterfaceParams{
+		Name: jsonParams.Name,
+		Description: sql.NullString{
+			String: jsonParams.Description,
+			Valid:  true,
+		},
+		Url:           jsonParams.Url,
+		Requestparams: jsonParams.Requestparams,
+		Requestheader: sql.NullString{
+			String: jsonParams.Requestheader,
+			Valid:  true,
+		},
+		Responseheader: sql.NullString{
+			String: jsonParams.Responseheader,
+			Valid:  true,
+		},
+		Method: jsonParams.Method,
+		Userid: jsonParams.Userid,
+	}
+}
+
+func ConvertToUpdateInterfaceParams(jsonParams *UpdateInterfaceParams) *dbsq.UpdateInterfaceParams {
+	return &dbsq.UpdateInterfaceParams{
+		Name: jsonParams.Name,
+		Description: sql.NullString{
+			String: jsonParams.Description,
+			Valid:  true,
+		},
+		Url:           jsonParams.Url,
+		Requestparams: jsonParams.Requestparams,
+		Requestheader: sql.NullString{
+			String: jsonParams.Requestheader,
+			Valid:  true,
+		},
+		Responseheader: sql.NullString{
+			String: jsonParams.Responseheader,
+			Valid:  true,
+		},
+		Method: jsonParams.Method,
+		Userid: jsonParams.Userid,
+		ID:     jsonParams.ID,
 	}
 }
