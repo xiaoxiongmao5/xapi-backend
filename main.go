@@ -5,6 +5,7 @@ import (
 	controller "xj/xapi-backend/controller"
 	"xj/xapi-backend/db"
 	_ "xj/xapi-backend/docs"
+	"xj/xapi-backend/enums"
 	"xj/xapi-backend/myerror"
 
 	"github.com/gin-gonic/gin"
@@ -13,18 +14,7 @@ import (
 )
 
 func init() {
-	myerror.ResponseCodes = map[string]int{
-		"Success":                0,
-		"ParameterError":         1001,
-		"AuthenticationFail":     1002,
-		"UserNotExist":           2001,
-		"UserExist":              2002,
-		"CreateUserFailed":       2003,
-		"UserPasswordError":      2004,
-		"GetInterfaceListFailed": 3001,
-	}
 	db.MyDB = db.ConnectionPool("root:@/xapi?charset=utf8&parseTime=true")
-
 }
 
 //	@title			xApi 项目
@@ -92,6 +82,20 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
+// 管理员权限校验的中间件
+func AdminMiddleware(c *gin.Context) {
+	fmt.Println("ToDo 管理员权限校验")
+	// 1. 获取当前用户信息
+	// 2. 判断有没有管理员权限
+	res := false
+	if res {
+		c.Error(myerror.NewAbortErr(int(enums.NotAdmin), "无权限"))
+		c.Abort()
+	} else {
+		c.Next()
+	}
+}
+
 func setupRouter() *gin.Engine {
 	r := gin.New()
 	// 使用自定义的中间件处理全局错误拦截
@@ -110,8 +114,10 @@ func setupRouter() *gin.Engine {
 	interfaceRouter := r.Group("/interface")
 	interfaceRouter.GET("/list", controller.ListInterface)
 	interfaceRouter.POST("/register", controller.CreateInterface)
-	interfaceRouter.POST("/update", controller.UpdateInterface)
-	interfaceRouter.GET("/delete", controller.DeleteInterface)
+	interfaceRouter.PUT("/update", controller.UpdateInterface)
+	interfaceRouter.DELETE("/delete", controller.DeleteInterface)
+	interfaceRouter.PUT("/online", AdminMiddleware, controller.OnlineInterface)
+	interfaceRouter.PUT("/offline", AdminMiddleware, controller.OfflineInterface)
 
 	return r
 }

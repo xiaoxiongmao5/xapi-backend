@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"xj/xapi-backend/enums"
 	"xj/xapi-backend/models"
 	"xj/xapi-backend/myerror"
 	service "xj/xapi-backend/service"
@@ -26,13 +27,13 @@ func UserRegister(c *gin.Context) {
 	var params *models.CreateUserParamsJSON
 	if err := c.ShouldBindJSON(&params); err != nil {
 		fmt.Printf("param CreateUserParamsJSON err=%v \n", err.Error())
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["ParameterError"], "参数错误"))
+		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
 	// 获取该账号是否存在过
 	_, err := service.GetUserInfo(params.Useraccount)
 	if err == nil {
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["UserExist"], "该账号名已被使用，请输入新的账号名"))
+		c.Error(myerror.NewAbortErr(int(enums.UserExist), "该账号名已被使用，请输入新的账号名"))
 		return
 	}
 	params.Userrole = "user"
@@ -40,7 +41,7 @@ func UserRegister(c *gin.Context) {
 	// fmt.Println("res=", res)
 	if err != nil {
 		fmt.Printf("service.CreateUser err=%v \n", err)
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["CreateUserFailed"], "账号创建失败"))
+		c.Error(myerror.NewAbortErr(int(enums.CreateUserFailed), "账号创建失败"))
 		return
 	}
 	c.JSON(200, gin.H{
@@ -59,7 +60,7 @@ func GetUserInfo(c *gin.Context) {
 	// 从请求中获取 Cookie
 	cookie, err := c.Cookie("token")
 	if err != nil {
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["UserNotExist"], "用户信息获取失败"))
+		c.Error(myerror.NewAbortErr(int(enums.UserNotExist), "用户信息获取失败"))
 		return
 	}
 	// // 这里假设有效的 token 是 "example_token"
@@ -70,7 +71,7 @@ func GetUserInfo(c *gin.Context) {
 	userInfo, err := service.GetUserInfo(cookie)
 	if err != nil {
 		fmt.Printf("q.GetUserInfo err=%v \n", err)
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["UserNotExist"], "用户不存在"))
+		c.Error(myerror.NewAbortErr(int(enums.UserNotExist), "用户不存在"))
 		return
 	}
 	fmt.Printf("拿到用户信息了%v \n", userInfo)
@@ -96,7 +97,7 @@ func UserLogin(c *gin.Context) {
 	userInfo, err := service.GetUserInfo(useraccount)
 	if err != nil {
 		fmt.Printf("q.GetUserInfo err=%v \n", err)
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["UserNotExist"], "用户不存在"))
+		c.Error(myerror.NewAbortErr(int(enums.UserNotExist), "用户不存在"))
 		return
 	}
 	fmt.Printf("拿到用户信息了%v \n", userInfo)
@@ -104,7 +105,7 @@ func UserLogin(c *gin.Context) {
 	err = utils.ComparePassword(userInfo.Userpassword, userpassword)
 	if err != nil {
 		fmt.Printf("HashPassword err=%v \n", err)
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["UserPasswordError"], "账号不存在或者密码验证错误"))
+		c.Error(myerror.NewAbortErr(int(enums.UserPasswordError), "账号不存在或者密码验证错误"))
 		return
 	}
 	token := useraccount
@@ -127,7 +128,7 @@ func UserLogout(c *gin.Context) {
 	// 从请求中获取 Cookie
 	cookie, err := c.Cookie("token")
 	if err != nil {
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["UserNotExist"], "用户信息获取失败"))
+		c.Error(myerror.NewAbortErr(int(enums.UserNotExist), "用户信息获取失败"))
 		return
 	}
 	// // 这里假设有效的 token 是 "example_token"

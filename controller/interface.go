@@ -2,7 +2,7 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
+	"xj/xapi-backend/enums"
 	"xj/xapi-backend/models"
 	"xj/xapi-backend/myerror"
 	"xj/xapi-backend/service"
@@ -22,18 +22,18 @@ func CreateInterface(c *gin.Context) {
 	var params *models.CreateInterfaceParams
 	if err := c.ShouldBindJSON(&params); err != nil {
 		fmt.Printf("param CreateInterfaceParams err=%v \n", err.Error())
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["ParameterError"], "参数错误"))
+		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
-	_, err := service.CreateInterface(params)
-	if err != nil {
+	// 注册接口
+	if _, err := service.CreateInterface(params); err != nil {
 		fmt.Printf("service.CreateUser err=%v \n", err)
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["CreateUserFailed"], "接口创建失败"))
+		c.Error(myerror.NewAbortErr(int(enums.CreateInterfaceFailed), "接口注册失败"))
 		return
 	}
 	c.JSON(200, gin.H{
 		"result": 0,
-		"msg":    "接口创建成功",
+		"msg":    "接口注册成功",
 	})
 }
 
@@ -44,18 +44,25 @@ func CreateInterface(c *gin.Context) {
 //	@Produce		application/json
 //	@Param			request	body		models.UpdateInterfaceParams	true	"接口信息"
 //	@Success		200		{object}	object
-//	@Router			/interface/update [post]
+//	@Router			/interface/update [put]
 func UpdateInterface(c *gin.Context) {
 	var params *models.UpdateInterfaceParams
 	if err := c.ShouldBindJSON(&params); err != nil {
 		fmt.Printf("param UpdateInterfaceParams err=%v \n", err.Error())
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["ParameterError"], "参数错误"))
+		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
-	err := service.UpdateInterface(params)
-	if err != nil {
+	// 1. 检查接口是否存在
+	if _, err := service.GetInterfaceInfo(params.ID); err != nil {
+		fmt.Printf("service.GetInterfaceInfo err=%v \n", err)
+		c.Error(myerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
+		return
+	}
+
+	// 2. 更新接口信息
+	if err := service.UpdateInterface(params); err != nil {
 		fmt.Printf("service.CreateUser err=%v \n", err)
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["CreateUserFailed"], "接口修改失败"))
+		c.Error(myerror.NewAbortErr(int(enums.UpdateInterfaceFailed), "接口修改失败"))
 		return
 	}
 	c.JSON(200, gin.H{
@@ -73,12 +80,12 @@ func UpdateInterface(c *gin.Context) {
 func ListInterface(c *gin.Context) {
 	list, err := service.ListInterfaces()
 	if err != nil {
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["GetInterfaceListFailed"], "获取接口列表失败"))
+		c.Error(myerror.NewAbortErr(int(enums.ListInterfaceFailed), "接口列表获取失败"))
 		return
 	}
 	c.JSON(200, gin.H{
 		"result": 0,
-		"msg":    "success",
+		"msg":    "接口列表获取成功",
 		"data":   list,
 	})
 }
@@ -86,26 +93,102 @@ func ListInterface(c *gin.Context) {
 //	@Summary		删除接口
 //	@Description	删除接口
 //	@Tags			接口相关
-//	@Accept			application/x-www-form-urlencoded
+//	@Accept			application/json
 //	@Produce		application/json
-//	@Param			id	query		int		true	"接口Id"
-//	@Success		200	{object}	object	"接口列表"
-//	@Router			/interface/delete [get]
+//	@Param			request	body		models.IdRequest	true	"接口id"
+//	@Success		200		{object}	object				"接口列表"
+//	@Router			/interface/delete [delete]
 func DeleteInterface(c *gin.Context) {
-	id, err := strconv.Atoi(c.Query("id"))
-	if err != nil {
-		fmt.Printf("param DeleteInterface err=%v \n", err)
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["ParameterError"], "参数错误"))
+	var params *models.IdRequest
+	if err := c.ShouldBindJSON(&params); err != nil {
+		fmt.Printf("param IdRequest err=%v \n", err.Error())
+		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
-	ID := int64(id)
-	err = service.DeleteInterface(ID)
-	if err != nil {
-		c.Error(myerror.NewAbortErr(myerror.ResponseCodes["GetInterfaceListFailed"], "删除接口失败"))
+	// 1. 检查接口是否存在
+	if _, err := service.GetInterfaceInfo(params.ID); err != nil {
+		fmt.Printf("service.GetInterfaceInfo err=%v \n", err)
+		c.Error(myerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
+		return
+	}
+	// 2. 删除接口
+	if err := service.DeleteInterface(params.ID); err != nil {
+		c.Error(myerror.NewAbortErr(int(enums.DeleteInterfaceFailed), "接口删除失败"))
 		return
 	}
 	c.JSON(200, gin.H{
 		"result": 0,
-		"msg":    "success",
+		"msg":    "接口删除成功",
+	})
+}
+
+//	@Summary		发布接口
+//	@Description	发布接口
+//	@Tags			接口相关
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			request	body		models.IdRequest	true	"接口id"
+//	@Success		200		{object}	object
+//	@Router			/interface/online [put]
+func OnlineInterface(c *gin.Context) {
+	var params *models.IdRequest
+	if err := c.ShouldBindJSON(&params); err != nil {
+		fmt.Printf("param IdRequest err=%v \n", err.Error())
+		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
+		return
+	}
+	// 1. 检查接口是否存在
+	if _, err := service.GetInterfaceInfo(params.ID); err != nil {
+		fmt.Printf("service.GetInterfaceInfo err=%v \n", err)
+		c.Error(myerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
+		return
+	}
+	// 2. 检查接口是否可用（调用测试接口）
+
+	// 3. 修改接口状态statuc=1
+	if err := service.OnlineInterfaceStatus(params.ID); err != nil {
+		fmt.Printf("service.OnlineInterfaceStatus err=%v \n", err)
+		c.Error(myerror.NewAbortErr(int(enums.OnlineInterfaceFailed), "接口发布失败"))
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"result": 0,
+		"msg":    "接口发布成功",
+	})
+}
+
+//	@Summary		下线接口
+//	@Description	下线接口
+//	@Tags			接口相关
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			request	body		models.IdRequest	true	"接口id"
+//	@Success		200		{object}	object
+//	@Router			/interface/offline [put]
+func OfflineInterface(c *gin.Context) {
+	var params *models.IdRequest
+	if err := c.ShouldBindJSON(&params); err != nil {
+		fmt.Printf("param IdRequest err=%v \n", err.Error())
+		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
+		return
+	}
+	// 1. 检查接口是否存在
+	if _, err := service.GetInterfaceInfo(params.ID); err != nil {
+		fmt.Printf("service.GetInterfaceInfo err=%v \n", err)
+		c.Error(myerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
+		return
+	}
+
+	// 2. 修改接口状态statuc=0
+	if err := service.OfflineInterfaceStatus(params.ID); err != nil {
+		fmt.Printf("service.OfflineInterfaceStatus err=%v \n", err)
+		c.Error(myerror.NewAbortErr(int(enums.OfflineInterfaceFailed), "接口下线失败"))
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"result": 0,
+		"msg":    "接口下线成功",
 	})
 }

@@ -28,3 +28,7 @@ WHERE id = ?;
 -- name: DeleteInterface :exec
 UPDATE xapi.`interface_info` set `isDelete` = 1 
 WHERE id = ?;
+
+-- name: UpdateInterfaceStatus :exec
+UPDATE xapi.`interface_info` set `status`=?
+WHERE id = ?;

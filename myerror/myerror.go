@@ -15,5 +15,3 @@ func NewAbortErr(code int, msg string) *AbortError {
 		Message: msg,
 	}
 }
-
-var ResponseCodes map[string]int
