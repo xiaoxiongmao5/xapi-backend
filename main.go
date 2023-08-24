@@ -112,12 +112,14 @@ func setupRouter() *gin.Engine {
 	userRouter.GET("/uinfo", controller.GetUserInfo)
 
 	interfaceRouter := r.Group("/interface")
+	interfaceRouter.GET("/:id", controller.GetInterfaceInfoById)
 	interfaceRouter.GET("/list", controller.ListInterface)
+	interfaceRouter.GET("/pagelist", controller.PageListInterface)
 	interfaceRouter.POST("/register", controller.CreateInterface)
 	interfaceRouter.PUT("/update", controller.UpdateInterface)
 	interfaceRouter.DELETE("/delete", controller.DeleteInterface)
-	interfaceRouter.PUT("/online", AdminMiddleware, controller.OnlineInterface)
-	interfaceRouter.PUT("/offline", AdminMiddleware, controller.OfflineInterface)
+	interfaceRouter.PATCH("/online", AdminMiddleware, controller.OnlineInterface)
+	interfaceRouter.PATCH("/offline", AdminMiddleware, controller.OfflineInterface)
 
 	return r
 }

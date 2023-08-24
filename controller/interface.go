@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"strconv"
 	"xj/xapi-backend/enums"
 	"xj/xapi-backend/models"
 	"xj/xapi-backend/myerror"
@@ -10,14 +11,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//	@Summary		注册接口
-//	@Description	注册接口
-//	@Tags			接口相关
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			request	body		models.CreateInterfaceParams	true	"接口信息"
-//	@Success		200		{object}	object
-//	@Router			/interface/register [post]
+// @Summary		注册接口
+// @Description	注册接口
+// @Tags			接口相关
+// @Accept			application/json
+// @Produce		application/json
+// @Param			request	body		models.CreateInterfaceParams	true	"接口信息"
+// @Success		200		{object}	object
+// @Router			/interface/register [post]
 func CreateInterface(c *gin.Context) {
 	var params *models.CreateInterfaceParams
 	if err := c.ShouldBindJSON(&params); err != nil {
@@ -37,14 +38,14 @@ func CreateInterface(c *gin.Context) {
 	})
 }
 
-//	@Summary		更新接口信息
-//	@Description	更新接口信息
-//	@Tags			接口相关
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			request	body		models.UpdateInterfaceParams	true	"接口信息"
-//	@Success		200		{object}	object
-//	@Router			/interface/update [put]
+// @Summary		更新接口信息
+// @Description	更新接口信息
+// @Tags			接口相关
+// @Accept			application/json
+// @Produce		application/json
+// @Param			request	body		models.UpdateInterfaceParams	true	"接口信息"
+// @Success		200		{object}	object
+// @Router			/interface/update [put]
 func UpdateInterface(c *gin.Context) {
 	var params *models.UpdateInterfaceParams
 	if err := c.ShouldBindJSON(&params); err != nil {
@@ -53,8 +54,8 @@ func UpdateInterface(c *gin.Context) {
 		return
 	}
 	// 1. 检查接口是否存在
-	if _, err := service.GetInterfaceInfo(params.ID); err != nil {
-		fmt.Printf("service.GetInterfaceInfo err=%v \n", err)
+	if _, err := service.GetInterfaceInfoById(params.ID); err != nil {
+		fmt.Printf("service.GetInterfaceInfoById err=%v \n", err)
 		c.Error(myerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
 		return
 	}
@@ -71,14 +72,14 @@ func UpdateInterface(c *gin.Context) {
 	})
 }
 
-//	@Summary		获得接口列表
-//	@Description	获取接口列表信息
-//	@Tags			接口相关
-//	@Produce		application/json
-//	@Success		200	{object}	object	"接口列表"
-//	@Router			/interface/list [get]
+// @Summary		获得所有接口列表
+// @Description	获取所有接口列表
+// @Tags			接口相关
+// @Produce		application/json
+// @Success		200	{object}	object	"接口列表"
+// @Router			/interface/list [get]
 func ListInterface(c *gin.Context) {
-	list, err := service.ListInterfaces()
+	list, err := service.AllListInterfaces()
 	if err != nil {
 		c.Error(myerror.NewAbortErr(int(enums.ListInterfaceFailed), "接口列表获取失败"))
 		return
@@ -90,14 +91,88 @@ func ListInterface(c *gin.Context) {
 	})
 }
 
-//	@Summary		删除接口
-//	@Description	删除接口
-//	@Tags			接口相关
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			request	body		models.IdRequest	true	"接口id"
-//	@Success		200		{object}	object				"接口列表"
-//	@Router			/interface/delete [delete]
+// @Summary		分页获得接口列表
+// @Description	分页获取接口列表
+// @Tags			接口相关
+// @Accept			application/x-www-form-urlencoded
+// @Produce		application/json
+// @Param			pageSize	query		int		true	"pageSize"
+// @Param			current		query		int		true	"current"
+// @Success		200			{object}	object	"接口列表"
+// @Router			/interface/pagelist [get]
+func PageListInterface(c *gin.Context) {
+	pageSize, err1 := strconv.Atoi(c.Query("pageSize"))
+	current, err2 := strconv.Atoi(c.Query("current"))
+	if err1 != nil || err2 != nil {
+		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
+		return
+	}
+	list, err := service.PageListInterfaces(current, pageSize)
+	if err != nil {
+		c.Error(myerror.NewAbortErr(int(enums.ListInterfaceFailed), "接口列表信息获取失败"))
+		return
+	}
+	count, err := service.GetInterfaceListCount()
+	if err != nil {
+		c.Error(myerror.NewAbortErr(int(enums.ListInterfaceFailed), "接口列表总数获取失败"))
+		return
+	}
+	c.JSON(200, gin.H{
+		"result": 0,
+		"msg":    "接口列表获取成功",
+		"data": gin.H{
+			"record": list,
+			"total":  count,
+		},
+	})
+}
+
+type ResponseWithData struct {
+	Result int                           `json:"result"`
+	Msg    string                        `json:"msg"`
+	Data   models.ValidXapiInterfaceInfo `json:"data"`
+}
+
+// @Summary		根据接口id获取接口信息
+// @Description	根据接口id获取接口信息
+// @Tags			接口相关
+// @Accept			application/x-www-form-urlencoded
+// @Produce		application/json
+// @Param			id	path		int					true	"接口id"
+// @Success		200	{object}	ResponseWithData	"接口列表"
+// @Router			/interface/{id} [get]
+func GetInterfaceInfoById(c *gin.Context) {
+	if id := c.Param("id"); id == "" {
+		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
+		return
+	}
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		fmt.Printf("param id format err=%v \n", err.Error())
+		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
+		return
+	}
+	data, err := service.GetInterfaceInfoById(int64(id))
+	if err != nil {
+		fmt.Printf("service.GetInterfaceInfoById err=%v \n", err)
+		c.Error(myerror.NewAbortErr(int(enums.InterfaceNotExist), "接口信息获取失败"))
+		return
+	}
+	c.JSON(200, gin.H{
+		"result": 0,
+		"msg":    "接口信息获取成功",
+		"data":   data,
+	})
+}
+
+// @Summary		删除接口
+// @Description	删除接口
+// @Tags			接口相关
+// @Accept			application/json
+// @Produce		application/json
+// @Param			request	body		models.IdRequest	true	"接口id"
+// @Success		200		{object}	object				"接口列表"
+// @Router			/interface/delete [delete]
 func DeleteInterface(c *gin.Context) {
 	var params *models.IdRequest
 	if err := c.ShouldBindJSON(&params); err != nil {
@@ -106,8 +181,8 @@ func DeleteInterface(c *gin.Context) {
 		return
 	}
 	// 1. 检查接口是否存在
-	if _, err := service.GetInterfaceInfo(params.ID); err != nil {
-		fmt.Printf("service.GetInterfaceInfo err=%v \n", err)
+	if _, err := service.GetInterfaceInfoById(params.ID); err != nil {
+		fmt.Printf("service.GetInterfaceInfoById err=%v \n", err)
 		c.Error(myerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
 		return
 	}
@@ -122,14 +197,14 @@ func DeleteInterface(c *gin.Context) {
 	})
 }
 
-//	@Summary		发布接口
-//	@Description	发布接口
-//	@Tags			接口相关
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			request	body		models.IdRequest	true	"接口id"
-//	@Success		200		{object}	object
-//	@Router			/interface/online [put]
+// @Summary		发布接口
+// @Description	发布接口
+// @Tags			接口相关
+// @Accept			application/json
+// @Produce		application/json
+// @Param			request	body		models.IdRequest	true	"接口id"
+// @Success		200		{object}	object
+// @Router			/interface/online [patch]
 func OnlineInterface(c *gin.Context) {
 	var params *models.IdRequest
 	if err := c.ShouldBindJSON(&params); err != nil {
@@ -138,8 +213,8 @@ func OnlineInterface(c *gin.Context) {
 		return
 	}
 	// 1. 检查接口是否存在
-	if _, err := service.GetInterfaceInfo(params.ID); err != nil {
-		fmt.Printf("service.GetInterfaceInfo err=%v \n", err)
+	if _, err := service.GetInterfaceInfoById(params.ID); err != nil {
+		fmt.Printf("service.GetInterfaceInfoById err=%v \n", err)
 		c.Error(myerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
 		return
 	}
@@ -158,14 +233,14 @@ func OnlineInterface(c *gin.Context) {
 	})
 }
 
-//	@Summary		下线接口
-//	@Description	下线接口
-//	@Tags			接口相关
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			request	body		models.IdRequest	true	"接口id"
-//	@Success		200		{object}	object
-//	@Router			/interface/offline [put]
+// @Summary		下线接口
+// @Description	下线接口
+// @Tags			接口相关
+// @Accept			application/json
+// @Produce		application/json
+// @Param			request	body		models.IdRequest	true	"接口id"
+// @Success		200		{object}	object
+// @Router			/interface/offline [patch]
 func OfflineInterface(c *gin.Context) {
 	var params *models.IdRequest
 	if err := c.ShouldBindJSON(&params); err != nil {
@@ -174,8 +249,8 @@ func OfflineInterface(c *gin.Context) {
 		return
 	}
 	// 1. 检查接口是否存在
-	if _, err := service.GetInterfaceInfo(params.ID); err != nil {
-		fmt.Printf("service.GetInterfaceInfo err=%v \n", err)
+	if _, err := service.GetInterfaceInfoById(params.ID); err != nil {
+		fmt.Printf("service.GetInterfaceInfoById err=%v \n", err)
 		c.Error(myerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
 		return
 	}

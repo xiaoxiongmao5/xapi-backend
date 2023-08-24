@@ -1,4 +1,4 @@
--- name: GetInterfaceInfo :one
+-- name: GetInterfaceInfoById :one
 SELECT * FROM xapi.`interface_info`
 WHERE id = ? AND isDelete = 0 LIMIT 1;
 
@@ -13,6 +13,10 @@ WHERE isDelete = 0
 ORDER BY id
 LIMIT ?
 OFFSET ?;
+
+-- name: GetInterfaceListCount :one
+select COUNT(*) FROM xapi.`interface_info`
+where isDelete = 0;
 
 -- name: CreateInterface :execresult
 insert into xapi.`interface_info` (

@@ -10,10 +10,10 @@ import (
 )
 
 // 根据接口ID 获得接口信息
-func GetInterfaceInfo(id int64) (*models.ValidXapiInterfaceInfo, error) {
+func GetInterfaceInfoById(id int64) (*models.ValidXapiInterfaceInfo, error) {
 	q := dbsq.New(db.MyDB)
 	ctx := context.Background()
-	data, err := q.GetInterfaceInfo(ctx, id)
+	data, err := q.GetInterfaceInfoById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func ConvertSliceToValidXapiInterfaceInfo(slice []*dbsq.XapiInterfaceInfo) []*mo
 }
 
 // 获得所有接口列表
-func ListInterfaces() ([]*models.ValidXapiInterfaceInfo, error) {
+func AllListInterfaces() ([]*models.ValidXapiInterfaceInfo, error) {
 	q := dbsq.New(db.MyDB)
 	ctx := context.Background()
 	res, error := q.ListInterfaces(ctx)
@@ -63,15 +63,35 @@ func ListInterfaces() ([]*models.ValidXapiInterfaceInfo, error) {
 	return ConvertSliceToValidXapiInterfaceInfo(res), nil
 }
 
+// 分页获得接口列表
+func PageListInterfaces(current int, pageSize int) ([]*models.ValidXapiInterfaceInfo, error) {
+	q := dbsq.New(db.MyDB)
+	ctx := context.Background()
+	res, error := q.ListPageInterfaces(ctx, &dbsq.ListPageInterfacesParams{
+		Limit:  int32(pageSize),
+		Offset: int32(current),
+	})
+	if error != nil {
+		return nil, error
+	}
+	return ConvertSliceToValidXapiInterfaceInfo(res), nil
+}
+
+// 获得接口列表总条数
+func GetInterfaceListCount() (int64, error) {
+	q := dbsq.New(db.MyDB)
+	ctx := context.Background()
+	return q.GetInterfaceListCount(ctx)
+}
+
 // 发布接口
 func OnlineInterfaceStatus(id int64) error {
 	q := dbsq.New(db.MyDB)
 	ctx := context.Background()
-	param := &dbsq.UpdateInterfaceStatusParams{
+	return q.UpdateInterfaceStatus(ctx, &dbsq.UpdateInterfaceStatusParams{
 		Status: int32(enums.InterfaceStatusOnline),
 		ID:     id,
-	}
-	return q.UpdateInterfaceStatus(ctx, param)
+	})
 }
 
 // 下线接口
