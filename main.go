@@ -64,7 +64,7 @@ func CORSMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", c.GetHeader("Origin"))
 
 		// 允许的 HTTP 方法
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 
 		// 允许的请求标头
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")

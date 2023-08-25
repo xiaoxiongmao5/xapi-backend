@@ -26,7 +26,7 @@ insert into xapi.`interface_info` (
     );
 
 -- name: UpdateInterface :exec
-UPDATE xapi.`interface_info` set `name`=?, `description`=?, `url`=?, `requestParams`=?, `requestHeader`=?, `responseHeader`=?, `status`=?, `method`=?, `userId`=?
+UPDATE xapi.`interface_info` set `name`=?, `description`=?, `url`=?, `requestParams`=?, `requestHeader`=?, `responseHeader`=?, `method`=?, `userId`=?
 WHERE id = ?;
 
 -- name: DeleteInterface :exec

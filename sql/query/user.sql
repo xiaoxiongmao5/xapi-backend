@@ -9,11 +9,18 @@ ORDER BY id
 LIMIT ?
 OFFSET ?;
 
--- name: CreateUser :execresult
+-- name: CreateUser2 :execresult
 insert into `user` (
     `userName`, `userAccount`, `userAvatar`, `gender`, `userRole`, `userPassword`, `accessKey`, `secretKey`
     ) values (
         ?, ?, ?, ?, ?, ?, ?, ?
+    );
+
+-- name: CreateUser :execresult
+insert into `user` (
+    `userAccount`, `userPassword`, `accessKey`, `secretKey`
+    ) values (
+        ?, ?, ?, ?
     );
 
 -- name: DeleteUser :exec

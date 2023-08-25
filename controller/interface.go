@@ -11,14 +11,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @Summary		注册接口
-// @Description	注册接口
-// @Tags			接口相关
-// @Accept			application/json
-// @Produce		application/json
-// @Param			request	body		models.CreateInterfaceParams	true	"接口信息"
-// @Success		200		{object}	object
-// @Router			/interface/register [post]
+//	@Summary		注册接口
+//	@Description	注册接口
+//	@Tags			接口相关
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			request	body		models.CreateInterfaceParams	true	"接口信息"
+//	@Success		200		{object}	object
+//	@Router			/interface/register [post]
 func CreateInterface(c *gin.Context) {
 	var params *models.CreateInterfaceParams
 	if err := c.ShouldBindJSON(&params); err != nil {
@@ -38,14 +38,14 @@ func CreateInterface(c *gin.Context) {
 	})
 }
 
-// @Summary		更新接口信息
-// @Description	更新接口信息
-// @Tags			接口相关
-// @Accept			application/json
-// @Produce		application/json
-// @Param			request	body		models.UpdateInterfaceParams	true	"接口信息"
-// @Success		200		{object}	object
-// @Router			/interface/update [put]
+//	@Summary		更新接口信息
+//	@Description	更新接口信息
+//	@Tags			接口相关
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			request	body		models.UpdateInterfaceParams	true	"接口信息"
+//	@Success		200		{object}	object
+//	@Router			/interface/update [put]
 func UpdateInterface(c *gin.Context) {
 	var params *models.UpdateInterfaceParams
 	if err := c.ShouldBindJSON(&params); err != nil {
@@ -72,12 +72,12 @@ func UpdateInterface(c *gin.Context) {
 	})
 }
 
-// @Summary		获得所有接口列表
-// @Description	获取所有接口列表
-// @Tags			接口相关
-// @Produce		application/json
-// @Success		200	{object}	object	"接口列表"
-// @Router			/interface/list [get]
+//	@Summary		获得所有接口列表
+//	@Description	获取所有接口列表
+//	@Tags			接口相关
+//	@Produce		application/json
+//	@Success		200	{object}	object	"接口列表"
+//	@Router			/interface/list [get]
 func ListInterface(c *gin.Context) {
 	list, err := service.AllListInterfaces()
 	if err != nil {
@@ -91,15 +91,15 @@ func ListInterface(c *gin.Context) {
 	})
 }
 
-// @Summary		分页获得接口列表
-// @Description	分页获取接口列表
-// @Tags			接口相关
-// @Accept			application/x-www-form-urlencoded
-// @Produce		application/json
-// @Param			pageSize	query		int		true	"pageSize"
-// @Param			current		query		int		true	"current"
-// @Success		200			{object}	object	"接口列表"
-// @Router			/interface/pagelist [get]
+//	@Summary		分页获得接口列表
+//	@Description	分页获取接口列表
+//	@Tags			接口相关
+//	@Accept			application/x-www-form-urlencoded
+//	@Produce		application/json
+//	@Param			pageSize	query		int		true	"pageSize"
+//	@Param			current		query		int		true	"current"
+//	@Success		200			{object}	object	"接口列表"
+//	@Router			/interface/pagelist [get]
 func PageListInterface(c *gin.Context) {
 	pageSize, err1 := strconv.Atoi(c.Query("pageSize"))
 	current, err2 := strconv.Atoi(c.Query("current"))
@@ -133,14 +133,14 @@ type ResponseWithData struct {
 	Data   models.ValidXapiInterfaceInfo `json:"data"`
 }
 
-// @Summary		根据接口id获取接口信息
-// @Description	根据接口id获取接口信息
-// @Tags			接口相关
-// @Accept			application/x-www-form-urlencoded
-// @Produce		application/json
-// @Param			id	path		int					true	"接口id"
-// @Success		200	{object}	ResponseWithData	"接口列表"
-// @Router			/interface/{id} [get]
+//	@Summary		根据接口id获取接口信息
+//	@Description	根据接口id获取接口信息
+//	@Tags			接口相关
+//	@Accept			application/x-www-form-urlencoded
+//	@Produce		application/json
+//	@Param			id	path		int					true	"接口id"
+//	@Success		200	{object}	ResponseWithData	"接口列表"
+//	@Router			/interface/{id} [get]
 func GetInterfaceInfoById(c *gin.Context) {
 	if id := c.Param("id"); id == "" {
 		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
@@ -165,14 +165,14 @@ func GetInterfaceInfoById(c *gin.Context) {
 	})
 }
 
-// @Summary		删除接口
-// @Description	删除接口
-// @Tags			接口相关
-// @Accept			application/json
-// @Produce		application/json
-// @Param			request	body		models.IdRequest	true	"接口id"
-// @Success		200		{object}	object				"接口列表"
-// @Router			/interface/delete [delete]
+//	@Summary		删除接口
+//	@Description	删除接口
+//	@Tags			接口相关
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			request	body		models.IdRequest	true	"接口id"
+//	@Success		200		{object}	object				"接口列表"
+//	@Router			/interface/delete [delete]
 func DeleteInterface(c *gin.Context) {
 	var params *models.IdRequest
 	if err := c.ShouldBindJSON(&params); err != nil {
@@ -197,14 +197,14 @@ func DeleteInterface(c *gin.Context) {
 	})
 }
 
-// @Summary		发布接口
-// @Description	发布接口
-// @Tags			接口相关
-// @Accept			application/json
-// @Produce		application/json
-// @Param			request	body		models.IdRequest	true	"接口id"
-// @Success		200		{object}	object
-// @Router			/interface/online [patch]
+//	@Summary		发布接口
+//	@Description	发布接口
+//	@Tags			接口相关
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			request	body		models.IdRequest	true	"接口id"
+//	@Success		200		{object}	object
+//	@Router			/interface/online [patch]
 func OnlineInterface(c *gin.Context) {
 	var params *models.IdRequest
 	if err := c.ShouldBindJSON(&params); err != nil {
@@ -233,14 +233,14 @@ func OnlineInterface(c *gin.Context) {
 	})
 }
 
-// @Summary		下线接口
-// @Description	下线接口
-// @Tags			接口相关
-// @Accept			application/json
-// @Produce		application/json
-// @Param			request	body		models.IdRequest	true	"接口id"
-// @Success		200		{object}	object
-// @Router			/interface/offline [patch]
+//	@Summary		下线接口
+//	@Description	下线接口
+//	@Tags			接口相关
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			request	body		models.IdRequest	true	"接口id"
+//	@Success		200		{object}	object
+//	@Router			/interface/offline [patch]
 func OfflineInterface(c *gin.Context) {
 	var params *models.IdRequest
 	if err := c.ShouldBindJSON(&params); err != nil {

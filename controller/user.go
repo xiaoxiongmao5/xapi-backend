@@ -30,18 +30,10 @@ func UserRegister(c *gin.Context) {
 		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
-	// 获取该账号是否存在过
-	_, err := service.GetUserInfo(params.Useraccount)
-	if err == nil {
-		c.Error(myerror.NewAbortErr(int(enums.UserExist), "该账号名已被使用，请输入新的账号名"))
-		return
-	}
-	params.Userrole = "user"
-	_, err = service.CreateUser(models.ConvertToCreateUserParamsJSON(params))
-	// fmt.Println("res=", res)
-	if err != nil {
+	// 注册用户
+	if _, err := service.CreateUser(params); err != nil {
 		fmt.Printf("service.CreateUser err=%v \n", err)
-		c.Error(myerror.NewAbortErr(int(enums.CreateUserFailed), "账号创建失败"))
+		c.Error(myerror.NewAbortErr(int(enums.CreateUserFailed), err.Error()))
 		return
 	}
 	c.JSON(200, gin.H{
@@ -102,7 +94,7 @@ func UserLogin(c *gin.Context) {
 	}
 	fmt.Printf("拿到用户信息了%v \n", userInfo)
 	// 密码验证
-	err = utils.ComparePassword(userInfo.Userpassword, userpassword)
+	err = utils.CheckHashPasswordByBcrypt(userInfo.Userpassword, userpassword)
 	if err != nil {
 		fmt.Printf("HashPassword err=%v \n", err)
 		c.Error(myerror.NewAbortErr(int(enums.UserPasswordError), "账号不存在或者密码验证错误"))

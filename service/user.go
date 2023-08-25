@@ -3,9 +3,11 @@ package service
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"xj/xapi-backend/db"
 	"xj/xapi-backend/dbsq"
+	"xj/xapi-backend/models"
 	"xj/xapi-backend/utils"
 )
 
@@ -18,15 +20,56 @@ func GetUserInfo(userAccount string) (*dbsq.User, error) {
 	return q.GetUserInfo(ctx, userAccount)
 }
 
+// 盐
+const SALT = "xj"
+
 // 创建账号
-func CreateUser(params *dbsq.CreateUserParams) (sql.Result, error) {
+func CreateUser(param *models.CreateUserParamsJSON) (sql.Result, error) {
+	userAccount, userPassword, checkUserPassword := param.UserAccount, param.UserPassword, param.CheckUserPassword
+	// 检验
+	if utils.AreEmptyStrings(userAccount, userPassword, checkUserPassword) {
+		return nil, errors.New("参数为空")
+	}
+	if len(userAccount) < 4 {
+		return nil, errors.New("用户账号过短")
+	}
+	if len(userPassword) < 8 || len(checkUserPassword) < 8 {
+		return nil, errors.New("用户密码过短")
+	}
+	// 密码和校验密码相同
+	if userPassword != checkUserPassword {
+		return nil, errors.New("两次输入的密码不一致")
+	}
+	// 账号不能重复
+	if _, err := GetUserInfo(userAccount); err == nil {
+		return nil, errors.New("账户已存在")
+	}
 	// 将密码进行哈希
-	HashPassword, err := utils.HashPassword(params.Userpassword)
+	hashPassword, err := utils.HashPasswordByBcrypt(userPassword)
 	if err != nil {
-		fmt.Printf("utils.HashPassword err=%v \n", err)
+		fmt.Printf("utils.HashByBcrypt err=%v \n", err)
 		return nil, err
 	}
-	params.Userpassword = HashPassword
+	// 分配accessKey,secretKey
+	var rand5, rand8 string
+
+	if rand5, err = utils.GenerateRandomKey(5); err != nil {
+		fmt.Printf("utils.GenerateRandomKey err=%v \n", err)
+		return nil, err
+	}
+	if rand8, err = utils.GenerateRandomKey(8); err != nil {
+		fmt.Printf("utils.GenerateRandomKey err=%v \n", err)
+		return nil, err
+	}
+	accessKey := utils.HashBySHA256WithSalt(userAccount+rand5, SALT)
+	secretKey := utils.HashBySHA256WithSalt(userAccount+rand8, SALT)
+
+	params := &dbsq.CreateUserParams{
+		Useraccount:  userAccount,
+		Userpassword: hashPassword,
+		Accesskey:    accessKey,
+		Secretkey:    secretKey,
+	}
 	q := dbsq.New(db.MyDB)
 	ctx := context.Background()
 	return q.CreateUser(ctx, params)

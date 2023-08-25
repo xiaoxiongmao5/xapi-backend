@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql"
 	"time"
 	"xj/xapi-backend/dbsq"
 )
@@ -28,14 +27,9 @@ type ShowUserJSON struct {
 
 // 注册用户
 type CreateUserParamsJSON struct {
-	Username     string `json:"username"`
-	Useraccount  string `json:"useraccount"`
-	Useravatar   string `json:"useravatar"`
-	Gender       int32  `json:"gender"`
-	Userrole     string `json:"userrole"`
-	Userpassword string `json:"userpassword"`
-	Accesskey    string `json:"accesskey"`
-	Secretkey    string `json:"secretkey"`
+	UserAccount       string `json:"userAccount"`
+	UserPassword      string `json:"userPassword"`
+	CheckUserPassword string `json:"checkUserPassword"`
 }
 
 type UserLoginParamsJSON struct {
@@ -65,26 +59,4 @@ func ConvertToNormalUser(u *dbsq.User) *ShowUserJSON {
 	}
 
 	return nu
-}
-
-func ConvertToCreateUserParamsJSON(jsonParams *CreateUserParamsJSON) *dbsq.CreateUserParams {
-	return &dbsq.CreateUserParams{
-		Useraccount: jsonParams.Useraccount,
-		Username: sql.NullString{
-			String: jsonParams.Username,
-			Valid:  true,
-		},
-		Useravatar: sql.NullString{
-			String: jsonParams.Useravatar,
-			Valid:  true,
-		},
-		Gender: sql.NullInt32{
-			Int32: jsonParams.Gender,
-			Valid: true,
-		},
-		Userrole:     jsonParams.Userrole,
-		Userpassword: jsonParams.Userpassword,
-		Accesskey:    jsonParams.Accesskey,
-		Secretkey:    jsonParams.Secretkey,
-	}
 }

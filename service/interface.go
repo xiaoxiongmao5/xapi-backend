@@ -7,6 +7,7 @@ import (
 	"xj/xapi-backend/dbsq"
 	"xj/xapi-backend/enums"
 	"xj/xapi-backend/models"
+	"xj/xapi-backend/utils"
 )
 
 // 根据接口ID 获得接口信息
@@ -64,12 +65,13 @@ func AllListInterfaces() ([]*models.ValidXapiInterfaceInfo, error) {
 }
 
 // 分页获得接口列表
-func PageListInterfaces(current int, pageSize int) ([]*models.ValidXapiInterfaceInfo, error) {
+func PageListInterfaces(current, pageSize int) ([]*models.ValidXapiInterfaceInfo, error) {
+	limit, offset := utils.CalculateLimitOffset(current, pageSize)
 	q := dbsq.New(db.MyDB)
 	ctx := context.Background()
 	res, error := q.ListPageInterfaces(ctx, &dbsq.ListPageInterfacesParams{
-		Limit:  int32(pageSize),
-		Offset: int32(current),
+		Limit:  int32(limit),
+		Offset: int32(offset),
 	})
 	if error != nil {
 		return nil, error

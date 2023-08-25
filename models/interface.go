@@ -24,7 +24,6 @@ type UpdateInterfaceParams struct {
 	Requestparams  string `json:"requestparams"`
 	Requestheader  string `json:"requestheader"`
 	Responseheader string `json:"responseheader"`
-	Status         int32  `json:"status"`
 	Method         string `json:"method"`
 	Userid         int64  `json:"userid"`
 	ID             int64  `json:"id"`
@@ -40,7 +39,11 @@ type ValidXapiInterfaceInfo struct {
 	Description string `json:"description"`
 	// 接口地址
 	Url string `json:"url"`
-	// 请求参数
+	/** 请求参数
+	[
+		{"name":"xxx", "type":"string"}
+	]
+	*/
 	Requestparams string `json:"requestparams"`
 	// 请求头
 	Requestheader string `json:"requestheader"`
@@ -64,7 +67,7 @@ func ConvertToValidXapiInterfaceInfo(i *dbsq.XapiInterfaceInfo) *ValidXapiInterf
 		Name:           i.Name,
 		Description:    i.Description.String, // Get the string value from sql.NullString
 		Url:            i.Url,
-		Requestparams:  i.Requestparams,
+		Requestparams:  i.Requestparams.String,
 		Requestheader:  i.Requestheader.String,  // Get the string value from sql.NullString
 		Responseheader: i.Responseheader.String, // Get the string value from sql.NullString
 		Status:         i.Status,
@@ -82,8 +85,11 @@ func ConvertToCreateInterfaceParams(jsonParams *CreateInterfaceParams) *dbsq.Cre
 			String: jsonParams.Description,
 			Valid:  true,
 		},
-		Url:           jsonParams.Url,
-		Requestparams: jsonParams.Requestparams,
+		Url: jsonParams.Url,
+		Requestparams: sql.NullString{
+			String: jsonParams.Requestparams,
+			Valid:  true,
+		},
 		Requestheader: sql.NullString{
 			String: jsonParams.Requestheader,
 			Valid:  true,
@@ -104,8 +110,11 @@ func ConvertToUpdateInterfaceParams(jsonParams *UpdateInterfaceParams) *dbsq.Upd
 			String: jsonParams.Description,
 			Valid:  true,
 		},
-		Url:           jsonParams.Url,
-		Requestparams: jsonParams.Requestparams,
+		Url: jsonParams.Url,
+		Requestparams: sql.NullString{
+			String: jsonParams.Requestparams,
+			Valid:  true,
+		},
 		Requestheader: sql.NullString{
 			String: jsonParams.Requestheader,
 			Valid:  true,
