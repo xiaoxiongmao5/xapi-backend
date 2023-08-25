@@ -2,18 +2,24 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"xj/xapi-backend/config"
 	controller "xj/xapi-backend/controller"
 	"xj/xapi-backend/db"
 	_ "xj/xapi-backend/docs"
 	"xj/xapi-backend/enums"
 	"xj/xapi-backend/myerror"
+	"xj/xapi-backend/store"
+	"xj/xapi-backend/utils"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func init() {
+	store.TokenMemoryStore = make(map[string]bool)
 	db.MyDB = db.ConnectionPool("root:@/xapi?charset=utf8&parseTime=true")
 }
 
@@ -46,7 +52,7 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 		if err := c.Errors.Last(); err != nil {
 			if abortError, ok := err.Err.(*myerror.AbortError); ok {
 				// 生成错误响应并终止请求处理
-				c.JSON(200, gin.H{
+				c.JSON(http.StatusOK, gin.H{
 					"result": abortError.Code,
 					"msg":    abortError.Message,
 				})
@@ -82,18 +88,71 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-// 管理员权限校验的中间件
-func AdminMiddleware(c *gin.Context) {
-	fmt.Println("ToDo 管理员权限校验")
-	// 1. 获取当前用户信息
-	// 2. 判断有没有管理员权限
-	res := false
-	if res {
-		c.Error(myerror.NewAbortErr(int(enums.NotAdmin), "无权限"))
-		c.Abort()
-	} else {
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 从请求中获取当前的 Token
+		tokenCookie, err := c.Cookie("token")
+		if err != nil || tokenCookie == "" {
+			// c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			c.Error(myerror.NewAbortErr(int(enums.Unauthorized), "Unauthorized"))
+			c.Abort()
+			return
+		}
+
+		// 验证当前 Token
+		token, err := jwt.Parse(tokenCookie, func(token *jwt.Token) (interface{}, error) {
+			return []byte(config.SecretKey), nil
+		})
+		if err != nil || !token.Valid {
+			c.Error(myerror.NewAbortErr(int(enums.Unauthorized), "Unauthorized"))
+			c.Abort()
+			return
+		}
+
+		// 从 Token 中获取用户信息
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			c.Error(myerror.NewAbortErr(int(enums.Unauthorized), "Unauthorized"))
+			c.Abort()
+			return
+		}
+
+		// 重新生成 Token，并更新有效期
+		userID := claims["user_id"].(string)
+		userRole := claims["user_role"].(string)
+		newToken, err := utils.GenerateToken(userID, userRole)
+		if err != nil {
+			c.Error(myerror.NewAbortErr(int(enums.GenerateTokenFailed), err.Error()))
+			c.Abort()
+			return
+		}
+
+		// 删除旧的 token
+		delete(store.TokenMemoryStore, tokenCookie)
+
+		// 更新内存中的 token 数据
+		store.TokenMemoryStore[newToken] = true
+
+		// 将新的 token 返回给前端
+		c.SetCookie("token", newToken, 3600, "/", "localhost", false, true)
+
+		// 在此可以将 claims 中的用户信息保存到上下文中，供后续处理使用
+		c.Set("user_id", claims["user_id"])
+		c.Set("user_role", claims["user_role"])
+
 		c.Next()
 	}
+}
+
+func AdminAuthMiddleware(c *gin.Context) {
+	// 从上下文中获取用户信息
+	userrole, exists := c.Get("user_role")
+	if !exists || userrole.(string) != "admin" {
+		c.Error(myerror.NewAbortErr(int(enums.NotAdminRole), "无权限"))
+		c.Abort()
+		return
+	}
+	c.Next()
 }
 
 func setupRouter() *gin.Engine {
@@ -108,18 +167,20 @@ func setupRouter() *gin.Engine {
 	userRouter := r.Group("/user")
 	userRouter.POST("/login", controller.UserLogin)
 	userRouter.POST("/register", controller.UserRegister)
-	userRouter.GET("/logout", controller.UserLogout)
-	userRouter.GET("/uinfo", controller.GetUserInfo)
+	userRouter.GET("/logout", AuthMiddleware(), controller.UserLogout)
+	userRouter.GET("/uinfo", AuthMiddleware(), controller.GetUserInfo)
 
-	interfaceRouter := r.Group("/interface")
+	interfaceRouter := r.Group("/interface", AuthMiddleware())
 	interfaceRouter.GET("/:id", controller.GetInterfaceInfoById)
 	interfaceRouter.GET("/list", controller.ListInterface)
 	interfaceRouter.GET("/pagelist", controller.PageListInterface)
 	interfaceRouter.POST("/register", controller.CreateInterface)
 	interfaceRouter.PUT("/update", controller.UpdateInterface)
 	interfaceRouter.DELETE("/delete", controller.DeleteInterface)
-	interfaceRouter.PATCH("/online", AdminMiddleware, controller.OnlineInterface)
-	interfaceRouter.PATCH("/offline", AdminMiddleware, controller.OfflineInterface)
+
+	interfaceRouter.PATCH("/online", AdminAuthMiddleware, controller.OnlineInterface)
+	interfaceRouter.PATCH("/offline", AdminAuthMiddleware, controller.OfflineInterface)
+	interfaceRouter.POST("/invoke", AdminAuthMiddleware, controller.InvokeInterface)
 
 	return r
 }

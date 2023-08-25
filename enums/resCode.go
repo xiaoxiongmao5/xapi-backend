@@ -9,7 +9,10 @@ const (
 	Success            ResCodeCommon = iota // 0
 	ParameterError                          // 1
 	AuthenticationFail                      // 2
-	NotAdmin
+	Unauthorized
+	NotAdminRole
+	GenerateRandomKeyFailed
+	GenerateTokenFailed
 )
 
 const (

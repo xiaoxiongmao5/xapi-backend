@@ -29,6 +29,11 @@ type UpdateInterfaceParams struct {
 	ID             int64  `json:"id"`
 }
 
+type InvokeInterfaceParams struct {
+	ID            int64  `json:"id"`
+	Requestparams string `json:"requestparams"`
+}
+
 // 接口信息
 type ValidXapiInterfaceInfo struct {
 	// 主键

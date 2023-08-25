@@ -5,10 +5,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"xj/xapi-backend/config"
 	"xj/xapi-backend/db"
 	"xj/xapi-backend/dbsq"
 	"xj/xapi-backend/models"
+	"xj/xapi-backend/store"
 	"xj/xapi-backend/utils"
+
+	"github.com/gin-gonic/gin"
 )
 
 // 获得用户信息
@@ -19,9 +23,6 @@ func GetUserInfo(userAccount string) (*dbsq.User, error) {
 	ctx := context.Background()
 	return q.GetUserInfo(ctx, userAccount)
 }
-
-// 盐
-const SALT = "xj"
 
 // 创建账号
 func CreateUser(param *models.CreateUserParamsJSON) (sql.Result, error) {
@@ -61,8 +62,8 @@ func CreateUser(param *models.CreateUserParamsJSON) (sql.Result, error) {
 		fmt.Printf("utils.GenerateRandomKey err=%v \n", err)
 		return nil, err
 	}
-	accessKey := utils.HashBySHA256WithSalt(userAccount+rand5, SALT)
-	secretKey := utils.HashBySHA256WithSalt(userAccount+rand8, SALT)
+	accessKey := utils.HashBySHA256WithSalt(userAccount+rand5, config.SALT)
+	secretKey := utils.HashBySHA256WithSalt(userAccount+rand8, config.SALT)
 
 	params := &dbsq.CreateUserParams{
 		Useraccount:  userAccount,
@@ -73,4 +74,16 @@ func CreateUser(param *models.CreateUserParamsJSON) (sql.Result, error) {
 	q := dbsq.New(db.MyDB)
 	ctx := context.Background()
 	return q.CreateUser(ctx, params)
+}
+
+// 删除token
+func DeleteToken(c *gin.Context) {
+	// 从cookie拿到token
+	tokenCookie, err := c.Cookie("token")
+	if err != nil || tokenCookie == "" {
+		return
+	}
+
+	// 从服务端删除该token
+	delete(store.TokenMemoryStore, tokenCookie)
 }

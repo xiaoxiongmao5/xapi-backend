@@ -2,6 +2,9 @@ package controller
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
 	"strconv"
 	"xj/xapi-backend/enums"
 	"xj/xapi-backend/models"
@@ -32,7 +35,7 @@ func CreateInterface(c *gin.Context) {
 		c.Error(myerror.NewAbortErr(int(enums.CreateInterfaceFailed), "接口注册失败"))
 		return
 	}
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"result": 0,
 		"msg":    "接口注册成功",
 	})
@@ -66,7 +69,7 @@ func UpdateInterface(c *gin.Context) {
 		c.Error(myerror.NewAbortErr(int(enums.UpdateInterfaceFailed), "接口修改失败"))
 		return
 	}
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"result": 0,
 		"msg":    "接口修改成功",
 	})
@@ -84,7 +87,7 @@ func ListInterface(c *gin.Context) {
 		c.Error(myerror.NewAbortErr(int(enums.ListInterfaceFailed), "接口列表获取失败"))
 		return
 	}
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"result": 0,
 		"msg":    "接口列表获取成功",
 		"data":   list,
@@ -117,7 +120,7 @@ func PageListInterface(c *gin.Context) {
 		c.Error(myerror.NewAbortErr(int(enums.ListInterfaceFailed), "接口列表总数获取失败"))
 		return
 	}
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"result": 0,
 		"msg":    "接口列表获取成功",
 		"data": gin.H{
@@ -158,7 +161,7 @@ func GetInterfaceInfoById(c *gin.Context) {
 		c.Error(myerror.NewAbortErr(int(enums.InterfaceNotExist), "接口信息获取失败"))
 		return
 	}
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"result": 0,
 		"msg":    "接口信息获取成功",
 		"data":   data,
@@ -191,7 +194,7 @@ func DeleteInterface(c *gin.Context) {
 		c.Error(myerror.NewAbortErr(int(enums.DeleteInterfaceFailed), "接口删除失败"))
 		return
 	}
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"result": 0,
 		"msg":    "接口删除成功",
 	})
@@ -227,7 +230,7 @@ func OnlineInterface(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"result": 0,
 		"msg":    "接口发布成功",
 	})
@@ -262,8 +265,80 @@ func OfflineInterface(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"result": 0,
 		"msg":    "接口下线成功",
 	})
+}
+
+//	@Summary		调用接口
+//	@Description	调用接口
+//	@Tags			接口相关
+//	@Accept			application/json
+//	@Param			request	body	models.InvokeInterfaceParams	true	"调用接口参数"
+//	@Router			/interface/invoke [post]
+func InvokeInterface(c *gin.Context) {
+	var params *models.InvokeInterfaceParams
+	if err := c.ShouldBindJSON(&params); err != nil {
+		fmt.Printf("param InvokeInterfaceParams err=%v \n", err.Error())
+		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
+		return
+	}
+	// 检查接口ID是否小于等于0
+	if params.ID <= 0 {
+		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
+		return
+	}
+
+	// 检查接口是否存在
+	interfaceInfo, err := service.GetInterfaceInfoById(params.ID)
+	if err != nil {
+		fmt.Printf("service.GetInterfaceInfoById err=%v \n", err)
+		c.Error(myerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
+		return
+	}
+
+	// 检查接口是否正常状态
+	if interfaceInfo.Status != int32(enums.InterfaceStatusOnline) {
+		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "接口未上线"))
+		return
+	}
+
+	// 获取用户的ak sk
+	userAccount, exists := c.Get("user_id")
+	if !exists {
+		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "用户不存在"))
+		return
+	}
+	userInfo, err := service.GetUserInfo(userAccount.(string))
+	accesskey := userInfo.Accesskey
+	secretkey := userInfo.Secretkey
+	fmt.Println("accesskey=", accesskey)
+	fmt.Println("secretkey=", secretkey)
+
+	// 构建 URL 参数
+	forwardHandlerParams := url.Values{}
+	forwardHandlerParams.Add("name", params.Requestparams)
+	forwardHandler(c, forwardHandlerParams)
+}
+
+func forwardHandler(c *gin.Context, params url.Values) {
+	requestURL := "http://localhost:8002/check" + "?" + params.Encode()
+	// 发起请求到第三方接口
+	response, err := http.Get(requestURL)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to make request"})
+		return
+	}
+	defer response.Body.Close()
+
+	// 读取响应体，将响应体内容原封不动地返回给前端
+	bodyBytes, err := io.ReadAll(response.Body)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response"})
+		return
+	}
+
+	// 将响应体内容直接返回给前端
+	c.Data(response.StatusCode, response.Header.Get("Content-Type"), bodyBytes)
 }

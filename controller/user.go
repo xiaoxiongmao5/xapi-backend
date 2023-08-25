@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 
@@ -9,6 +10,7 @@ import (
 	"xj/xapi-backend/models"
 	"xj/xapi-backend/myerror"
 	service "xj/xapi-backend/service"
+	"xj/xapi-backend/store"
 	"xj/xapi-backend/utils"
 
 	_ "github.com/go-sql-driver/mysql" //导入
@@ -30,13 +32,15 @@ func UserRegister(c *gin.Context) {
 		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
+
 	// 注册用户
 	if _, err := service.CreateUser(params); err != nil {
 		fmt.Printf("service.CreateUser err=%v \n", err)
 		c.Error(myerror.NewAbortErr(int(enums.CreateUserFailed), err.Error()))
 		return
 	}
-	c.JSON(200, gin.H{
+
+	c.JSON(http.StatusOK, gin.H{
 		"result": 0,
 		"msg":    "账号创建成功",
 	})
@@ -49,25 +53,20 @@ func UserRegister(c *gin.Context) {
 //	@Success		200	{object}	object	"用户信息"
 //	@Router			/user/uinfo [get]
 func GetUserInfo(c *gin.Context) {
-	// 从请求中获取 Cookie
-	cookie, err := c.Cookie("token")
-	if err != nil {
-		c.Error(myerror.NewAbortErr(int(enums.UserNotExist), "用户信息获取失败"))
+	useraccount, exists := c.Get("user_id")
+	if !exists {
+		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "用户不存在"))
 		return
 	}
-	// // 这里假设有效的 token 是 "example_token"
-	// if cookie != "example_token" {
-	// 	c.String(http.StatusUnauthorized, "Unauthorized")
-	// 	return
-	// }
-	userInfo, err := service.GetUserInfo(cookie)
+
+	userInfo, err := service.GetUserInfo(useraccount.(string))
 	if err != nil {
 		fmt.Printf("q.GetUserInfo err=%v \n", err)
 		c.Error(myerror.NewAbortErr(int(enums.UserNotExist), "用户不存在"))
 		return
 	}
-	fmt.Printf("拿到用户信息了%v \n", userInfo)
-	c.JSON(200, gin.H{
+
+	c.JSON(http.StatusOK, gin.H{
 		"result": 0,
 		"msg":    "success",
 		"data":   models.ConvertToNormalUser(userInfo),
@@ -83,27 +82,49 @@ func GetUserInfo(c *gin.Context) {
 //	@Success		200		{object}	object
 //	@Router			/user/login [post]
 func UserLogin(c *gin.Context) {
+	// // 检查用户是否已经登录
+	// tokenCookie, err := c.Cookie("token")
+	// if err == nil && tokenCookie != "" {
+	// 	// 已经登录，直接返回登录成功
+	// 	c.JSON(http.StatusOK, gin.H{"result": 0, "msg": "Already logged in"})
+	// 	return
+	// }
+	service.DeleteToken(c)
+
 	useraccount := c.PostForm("useraccount")
 	userpassword := c.PostForm("userpassword")
 
+	// 用户是否存在（获取用户信息）
 	userInfo, err := service.GetUserInfo(useraccount)
 	if err != nil {
 		fmt.Printf("q.GetUserInfo err=%v \n", err)
-		c.Error(myerror.NewAbortErr(int(enums.UserNotExist), "用户不存在"))
+		c.Error(myerror.NewAbortErr(int(enums.UserNotExist), "账号不存在"))
 		return
 	}
 	fmt.Printf("拿到用户信息了%v \n", userInfo)
-	// 密码验证
-	err = utils.CheckHashPasswordByBcrypt(userInfo.Userpassword, userpassword)
-	if err != nil {
-		fmt.Printf("HashPassword err=%v \n", err)
+
+	// 验证密码是否正常
+	if err := utils.CheckHashPasswordByBcrypt(userInfo.Userpassword, userpassword); err != nil {
+		fmt.Printf("CheckHashPasswordByBcrypt err=%v \n", err)
 		c.Error(myerror.NewAbortErr(int(enums.UserPasswordError), "账号不存在或者密码验证错误"))
 		return
 	}
-	token := useraccount
-	// 设置 Cookie
+
+	// 生成token
+	token, err := utils.GenerateToken(useraccount, userInfo.Userrole)
+	if err != nil {
+		fmt.Printf("utils.GenerateToken err=%v \n", err)
+		c.Error(myerror.NewAbortErr(int(enums.GenerateTokenFailed), err.Error()))
+		return
+	}
+
+	// 存储token
+	store.TokenMemoryStore[token] = true
+
+	// 返回token到前端
 	c.SetCookie("token", token, 3600, "/", "localhost", false, true)
-	c.JSON(200, gin.H{
+
+	c.JSON(http.StatusOK, gin.H{
 		"result": 0,
 		"msg":    "success",
 		"data":   models.ConvertToNormalUser(userInfo),
@@ -117,21 +138,13 @@ func UserLogin(c *gin.Context) {
 //	@Produce		application/json
 //	@Router			/user/logout [get]
 func UserLogout(c *gin.Context) {
-	// 从请求中获取 Cookie
-	cookie, err := c.Cookie("token")
-	if err != nil {
-		c.Error(myerror.NewAbortErr(int(enums.UserNotExist), "用户信息获取失败"))
-		return
-	}
-	// // 这里假设有效的 token 是 "example_token"
-	// if cookie != "example_token" {
-	// 	c.String(http.StatusUnauthorized, "Unauthorized")
-	// 	return
-	// }
-	c.SetCookie("token", "", -1, "/", "localhost", false, true)
-	fmt.Println("token=", cookie)
-	// 去掉客户端的cookie
-	c.JSON(200, gin.H{
+	// 服务端删除token
+	service.DeleteToken(c)
+
+	// // 从前端删除该token的cookie
+	// c.SetCookie("token", "", -1, "/", "localhost", false, true)
+
+	c.JSON(http.StatusOK, gin.H{
 		"result": 0,
 		"msg":    "success",
 	})

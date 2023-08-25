@@ -34,3 +34,14 @@ func IntSlice2StrSlice(intSlice []int) []string {
 	}
 	return strSlice
 }
+
+/** 前端分页参数转数据库查询的limit和offser
+ */
+func CalculateLimitOffset(current, pageSize int) (limit, offset int) {
+	if current < 1 {
+		current = 1
+	}
+	offset = (current - 1) * pageSize
+	limit = pageSize
+	return limit, offset
+}
