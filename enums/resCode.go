@@ -13,6 +13,7 @@ const (
 	NotAdminRole
 	GenerateRandomKeyFailed
 	GenerateTokenFailed
+	HandleSQLError
 )
 
 const (

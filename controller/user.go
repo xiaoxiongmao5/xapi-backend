@@ -122,7 +122,8 @@ func UserLogin(c *gin.Context) {
 	store.TokenMemoryStore[token] = true
 
 	// 返回token到前端
-	c.SetCookie("token", token, 3600, "/", "localhost", false, true)
+	domain, _ := utils.GetDomainFromReferer(c.Request.Referer())
+	c.SetCookie("token", token, 3600, "/", domain, false, true)
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": 0,
@@ -142,7 +143,8 @@ func UserLogout(c *gin.Context) {
 	service.DeleteToken(c)
 
 	// // 从前端删除该token的cookie
-	// c.SetCookie("token", "", -1, "/", "localhost", false, true)
+	// domain, _ := utils.GetDomainFromReferer(c.Request.Referer())
+	// c.SetCookie("token", "", -1, "/", domain, false, true)
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": 0,

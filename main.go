@@ -1,8 +1,10 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
+	"os"
 	"xj/xapi-backend/config"
 	controller "xj/xapi-backend/controller"
 	"xj/xapi-backend/db"
@@ -12,13 +14,29 @@ import (
 	"xj/xapi-backend/store"
 	"xj/xapi-backend/utils"
 
+	_ "xj/xapi-backend/rpc_api_service"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+
+	dubboConfig "dubbo.apache.org/dubbo-go/v3/config"
+	_ "dubbo.apache.org/dubbo-go/v3/imports"
 )
 
 func init() {
+	// 使用命令行参数来指定配置文件路径
+	configFile := flag.String("config", "conf/dubbogo.yaml", "Path to Dubbo-go config file")
+	flag.Parse()
+
+	// 设置 DUBBO_GO_CONFIG_PATH 环境变量
+	os.Setenv("DUBBO_GO_CONFIG_PATH", *configFile)
+
+	// 加载 Dubbo-go 的配置文件，根据环境变量 DUBBO_GO_CONFIG_PATH 中指定的配置文件路径加载配置信息。配置文件通常包括 Dubbo 服务的注册中心地址、协议、端口等信息。
+	if err := dubboConfig.Load(); err != nil {
+		panic(err)
+	}
 	store.TokenMemoryStore = make(map[string]bool)
 	db.MyDB = db.ConnectionPool("root:@/xapi?charset=utf8&parseTime=true")
 }
@@ -40,7 +58,7 @@ func init() {
 func main() {
 	fmt.Println("hi xj")
 	r := setupRouter()
-	r.Run(":8080")
+	r.Run(":8090")
 
 }
 
@@ -73,14 +91,14 @@ func CORSMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 
 		// 允许的请求标头
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Nonce, timestamp, accessKey, sign")
 
 		// 允许携带 Cookie
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 
 		// 如果是预检请求（OPTIONS 请求），直接返回成功状态
 		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(200)
+			c.AbortWithStatus(http.StatusNoContent)
 			return
 		}
 
@@ -134,7 +152,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		store.TokenMemoryStore[newToken] = true
 
 		// 将新的 token 返回给前端
-		c.SetCookie("token", newToken, 3600, "/", "localhost", false, true)
+		domain, _ := utils.GetDomainFromReferer(c.Request.Referer())
+		c.SetCookie("token", newToken, 3600, "/", domain, false, true)
 
 		// 在此可以将 claims 中的用户信息保存到上下文中，供后续处理使用
 		c.Set("user_id", claims["user_id"])
