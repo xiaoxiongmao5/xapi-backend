@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"xj/xapi-backend/enums"
+	ghandle "xj/xapi-backend/g_handle"
 	"xj/xapi-backend/models"
 	"xj/xapi-backend/myerror"
 	service "xj/xapi-backend/service"
@@ -52,16 +53,16 @@ func UserRegister(c *gin.Context) {
 //	@Produce		application/json
 //	@Success		200	{object}	object	"用户信息"
 //	@Router			/user/uinfo [get]
-func GetUserInfo(c *gin.Context) {
+func GetUserInfoByUserAccount(c *gin.Context) {
 	useraccount, exists := c.Get("user_id")
 	if !exists {
-		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "用户不存在"))
+		ghandle.HandlerContextError(c, "user_id")
 		return
 	}
 
-	userInfo, err := service.GetUserInfo(useraccount.(string))
+	userInfo, err := service.GetUserInfoByUserAccount(useraccount.(string))
 	if err != nil {
-		fmt.Printf("q.GetUserInfo err=%v \n", err)
+		fmt.Printf("q.GetUserInfoByUserAccount err=%v \n", err)
 		c.Error(myerror.NewAbortErr(int(enums.UserNotExist), "用户不存在"))
 		return
 	}
@@ -95,9 +96,9 @@ func UserLogin(c *gin.Context) {
 	userpassword := c.PostForm("userpassword")
 
 	// 用户是否存在（获取用户信息）
-	userInfo, err := service.GetUserInfo(useraccount)
+	userInfo, err := service.GetUserInfoByUserAccount(useraccount)
 	if err != nil {
-		fmt.Printf("q.GetUserInfo err=%v \n", err)
+		fmt.Printf("q.GetUserInfoByUserAccount err=%v \n", err)
 		c.Error(myerror.NewAbortErr(int(enums.UserNotExist), "账号不存在"))
 		return
 	}

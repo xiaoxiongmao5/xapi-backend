@@ -187,7 +187,7 @@ func setupRouter() *gin.Engine {
 	userRouter.POST("/login", controller.UserLogin)
 	userRouter.POST("/register", controller.UserRegister)
 	userRouter.GET("/logout", AuthMiddleware(), controller.UserLogout)
-	userRouter.GET("/uinfo", AuthMiddleware(), controller.GetUserInfo)
+	userRouter.GET("/uinfo", AuthMiddleware(), controller.GetUserInfoByUserAccount)
 
 	interfaceRouter := r.Group("/interface", AuthMiddleware())
 	interfaceRouter.GET("/:id", controller.GetInterfaceInfoById)
@@ -199,7 +199,8 @@ func setupRouter() *gin.Engine {
 
 	interfaceRouter.PATCH("/online", AdminAuthMiddleware, controller.OnlineInterface)
 	interfaceRouter.PATCH("/offline", AdminAuthMiddleware, controller.OfflineInterface)
-	interfaceRouter.POST("/invoke", AdminAuthMiddleware, controller.InvokeInterface)
+
+	r.POST("/api/invoke", AuthMiddleware(), controller.InvokeInterface)
 
 	return r
 }

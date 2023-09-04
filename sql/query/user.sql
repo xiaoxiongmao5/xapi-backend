@@ -1,10 +1,14 @@
--- name: GetUserInfo :one
+-- name: GetUserInfoByUniUserAccount :one
 SELECT * FROM `user`
-WHERE `userAccount` = ? AND isDelete = 0 LIMIT 1;
+WHERE `userAccount` = ? AND `isDelete` = 0 LIMIT 1;
+
+-- name: GetUserInfoByUniAccessKey :one
+SELECT * FROM `user`
+WHERE `accessKey` = ? AND `isDelete` = 0 LIMIT 1;
 
 -- name: ListUsers :many
 SELECT * FROM `user`
-WHERE isDelete = 0
+WHERE `isDelete` = 0
 ORDER BY id
 LIMIT ?
 OFFSET ?;

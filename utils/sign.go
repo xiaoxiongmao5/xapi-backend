@@ -1,9 +1,11 @@
 package utils
 
 import (
-	"crypto/rand"
+	"crypto/md5"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
+	"math/rand"
 	"time"
 	"xj/xapi-backend/config"
 
@@ -40,18 +42,38 @@ func CheckHashPasswordByBcrypt(hashPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(password))
 }
 
-/** 生成随机字符串
+/** 生成包含N个随机数字的字符串
  */
-func GenerateRandomKey(length int) (string, error) {
-	randomBytes := make([]byte, length)
-	// 生成随机的字节序列
-	_, err := rand.Read(randomBytes)
-	if err != nil {
-		return "", err
+func GenetateRandomString(length int) string {
+	// 设置随机数种子，以确保每次运行生成的随机数都不同
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	// 定义一个包含数字字符的字符集
+	charset := "0123456789"
+	charsetLength := len(charset)
+
+	// 生成随机数字并拼接字符串
+	randomString := make([]byte, length)
+	for i := 0; i < length; i++ {
+		randomIndex := r.Intn(charsetLength)
+		randomChar := charset[randomIndex]
+		randomString[i] = randomChar
 	}
-	// 转为base64编码的字符串
-	return base64.StdEncoding.EncodeToString(randomBytes), nil
+	return string(randomString)
 }
+
+// /** 生成随机字符串
+//  */
+// func GenerateRandomKey(length int) (string, error) {
+// 	randomBytes := make([]byte, length)
+// 	// 生成随机的字节序列
+// 	_, err := rand.Read(randomBytes)
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	// 转为base64编码的字符串
+// 	return base64.StdEncoding.EncodeToString(randomBytes), nil
+// }
 
 /** 生成带盐的哈希值（SHA-256 哈希算法）
  */
@@ -61,22 +83,8 @@ func HashBySHA256WithSalt(data, salt string) string {
 	return base64.StdEncoding.EncodeToString(hasher.Sum(nil))
 }
 
-/** 签名工具
- */
-func GetSign(body string, accessKey string) (sign string) {
-	// 生成随机数 nonce
-
-	// 请求体内容
-
-	// 当前时间戳 timestamp
-
-	// 生成签名
-	return
-}
-
-func CheckSign(sign string, accessKey string) (res bool) {
-	// 校验随机数
-
-	// 校验时间戳与当前时间的差距，不能超过5分钟
-	return
+func MD5(str string) string {
+	s := md5.New()
+	s.Write([]byte(str))
+	return hex.EncodeToString(s.Sum(nil))
 }

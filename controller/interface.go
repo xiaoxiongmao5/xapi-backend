@@ -1,15 +1,19 @@
 package controller
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"strconv"
+	"time"
 	"xj/xapi-backend/enums"
+	ghandle "xj/xapi-backend/g_handle"
 	"xj/xapi-backend/models"
 	"xj/xapi-backend/myerror"
 	"xj/xapi-backend/service"
+	"xj/xapi-backend/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -273,10 +277,10 @@ func OfflineInterface(c *gin.Context) {
 
 //	@Summary		调用接口
 //	@Description	调用接口
-//	@Tags			接口相关
+//	@Tags			接口调用相关
 //	@Accept			application/json
 //	@Param			request	body	models.InvokeInterfaceParams	true	"调用接口参数"
-//	@Router			/interface/invoke [post]
+//	@Router			/api/invoke [post]
 func InvokeInterface(c *gin.Context) {
 	var params *models.InvokeInterfaceParams
 	if err := c.ShouldBindJSON(&params); err != nil {
@@ -307,31 +311,23 @@ func InvokeInterface(c *gin.Context) {
 	// 获取用户的ak sk
 	userAccount, exists := c.Get("user_id")
 	if !exists {
-		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "用户不存在"))
+		ghandle.HandlerContextError(c, "user_id")
 		return
 	}
-	userInfo, err := service.GetUserInfo(userAccount.(string))
+	userInfo, err := service.GetUserInfoByUserAccount(userAccount.(string))
 	accesskey := userInfo.Accesskey
 	secretkey := userInfo.Secretkey
 	fmt.Println("accesskey=", accesskey)
 	fmt.Println("secretkey=", secretkey)
 
-	// 构建 URL 参数
-	forwardHandlerParams := url.Values{}
-	forwardHandlerParams.Add("name", params.Requestparams)
-	forwardHandler(c, forwardHandlerParams)
-}
-
-func forwardHandler(c *gin.Context, params url.Values) {
-	requestURL := "http://localhost:8002/check" + "?" + params.Encode()
-	// 发起请求到第三方接口
-	response, err := http.Get(requestURL)
+	// todo new一个客户端SDK
+	response, err := CheckByGet(c, interfaceInfo, accesskey, secretkey)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to make request"})
+		fmt.Printf("CheckByGet err=%v \n", err)
+		// todo 这里可以降级处理
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "接口转发失败"})
 		return
 	}
-	defer response.Body.Close()
-
 	// 读取响应体，将响应体内容原封不动地返回给前端
 	bodyBytes, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -341,4 +337,89 @@ func forwardHandler(c *gin.Context, params url.Values) {
 
 	// 将响应体内容直接返回给前端
 	c.Data(response.StatusCode, response.Header.Get("Content-Type"), bodyBytes)
+}
+
+// 计算API签名
+func calculateSignature(accessKey, secretKey, nonce, timestamp, requestBody string) string {
+	// 将参数拼接成一个字符串
+	concatenatedString := accessKey + nonce + timestamp + requestBody + secretKey
+
+	// 计算 MD5 值
+	signature := md5.Sum([]byte(concatenatedString))
+	return hex.EncodeToString(signature[:])
+}
+
+// 获得请求头
+func getRequestHeaders(accessKey, secretkey, requestBody string) http.Header {
+	headers := make(http.Header)
+
+	// 生成 nonce 和 timestamp
+	nonce, err := utils.GenerateRandomKey(4)
+	if err != nil {
+		return headers
+	}
+	// timestamp := string(time.Now().Unix())
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+
+	// 计算签名
+	signature := calculateSignature(accessKey, secretkey, nonce, timestamp, requestBody)
+
+	// 设置请求头
+	headers.Set("accessKey", accessKey)
+	headers.Set("nonce", nonce)
+	headers.Set("timestamp", timestamp)
+	headers.Set("sign", signature)
+
+	return headers
+}
+
+func CheckByGet(c *gin.Context, interfaceInfo *models.ValidXapiInterfaceInfo, accessKey string, secretkey string) (*http.Response, error) {
+	// 构建请求URL
+	// requestURL := "http://localhost:8002/check" + "?" + params.Encode()
+	requestURL := interfaceInfo.Host + interfaceInfo.Url
+
+	// 创建HTTP请求客户端
+	client := &http.Client{}
+
+	method := interfaceInfo.Method
+
+	// 创建HTTP请求
+	// todo 这里的body io.Reader 如何从请求参数转换后发送
+	req, err := http.NewRequest(method, requestURL, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
+		return nil, err
+	}
+
+	// // 从 *gin.Context 中获取请求体
+	// requestBody, err := io.ReadAll(c.Request.Body)
+	// if err != nil {
+	// 	// 处理错误
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read request body"})
+	// 	return nil, err
+	// }
+
+	// // 获取请求头并设置到HTTP请求中
+	// headers := getRequestHeaders(accessKey, secretkey, string(requestBody))
+	// req.Header = headers
+
+	// 发起请求到第三方接口
+	response, err := client.Do(req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to make request"})
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	return response, nil
+
+	// // 读取响应体，将响应体内容原封不动地返回给前端
+	// bodyBytes, err := io.ReadAll(response.Body)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response"})
+	// 	return
+	// }
+
+	// // 将响应体内容直接返回给前端
+	// c.Data(response.StatusCode, response.Header.Get("Content-Type"), bodyBytes)
 }

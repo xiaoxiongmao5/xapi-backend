@@ -20,8 +20,8 @@ create table if not exists user
     createTime   datetime     default CURRENT_TIMESTAMP not null comment '创建时间',
     updateTime   datetime     default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
     isDelete     tinyint      default 0                 not null comment '是否删除',
-    constraint uni_userAccount
-        unique (userAccount)
+    constraint uni_userAccount UNIQUE (userAccount),
+    UNIQUE KEY `uni_accessKey` (`accessKey`)
 ) comment '用户';
 
 -- 接口信息
@@ -30,6 +30,7 @@ create table if not exists xapi.`interface_info`
     `id` bigint not null auto_increment comment '主键' primary key,
     `name` varchar(256) not null comment '名称',
     `description` varchar(256) null comment '描述',
+    `host` varchar(32) not null comment '域名',
     `url` varchar(512) not null comment '接口地址',
     `requestParams` text null comment '请求参数',
     `requestHeader` text null comment '请求头',
@@ -39,7 +40,9 @@ create table if not exists xapi.`interface_info`
     `userId` bigint not null comment '创建人',
     `createTime` datetime default CURRENT_TIMESTAMP not null comment '创建时间',
     `updateTime` datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
-    `isDelete` tinyint default 0 not null comment '是否删除(0-未删, 1-已删)'
+    `isDelete` tinyint default 0 not null comment '是否删除(0-未删, 1-已删)',
+    UNIQUE KEY `uni_fullApi` (`url`, `host`, `method`),
+    KEY `url_method` (`url`, `method`)
 ) comment '接口信息';
 
 -- 用户调用接口关系表
@@ -53,7 +56,8 @@ create table if not exists xapi.`user_interface_info`
     `status` int default 0 not null comment '0-正常，1-禁用',
     `createTime` datetime default CURRENT_TIMESTAMP not null comment '创建时间',
     `updateTime` datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
-    `isDelete` tinyint default 0 not null comment '是否删除(0-未删, 1-已删)'
+    `isDelete` tinyint default 0 not null comment '是否删除(0-未删, 1-已删)',
+    UNIQUE KEY `uni_userId_interfaceInfoId` (`userId`, `interfaceInfoId`)
 ) comment '用户调用接口关系';
 
 insert into xapi.`interface_info` (`name`, `description`, `url`, `requestHeader`, `responseHeader`, `status`, `method`, `userId`) values ('许擎宇', '薛聪健', 'www.cary-king.net', '潘博涛', '谭聪健', 0, '石炫明', 9500534531);

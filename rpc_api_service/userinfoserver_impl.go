@@ -5,6 +5,7 @@ import (
 
 	"xj/xapi-backend/dbsq"
 	"xj/xapi-backend/rpc_api"
+	"xj/xapi-backend/service"
 
 	"dubbo.apache.org/dubbo-go/v3/common/logger"
 )
@@ -15,7 +16,11 @@ type UserInfoServerImpl struct {
 
 func (s *UserInfoServerImpl) GetInvokeUser(ctx context.Context, in *rpc_api.GetInvokeUserReq) (*rpc_api.GetInvokeUserResp, error) {
 	logger.Infof("Dubbo-go GetInvokeUser AccessKey = %s\n", in.AccessKey)
-	return &rpc_api.GetInvokeUserResp{}, nil
+	data, err := service.GetUserInfoByAccessKey(in.AccessKey)
+	if err != nil {
+		return nil, err
+	}
+	return ConvertUserToGetInvokeUserResp(data)
 }
 
 // 定义一个函数将 User 结构体转换为 GetInvokeUserResp 消息

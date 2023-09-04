@@ -22,6 +22,23 @@ func GetInterfaceInfoById(id int64) (*models.ValidXapiInterfaceInfo, error) {
 	return retdata, nil
 }
 
+// 根据 host+url+method 获得接口信息
+func GetInterfaceInfoByUniFullApi(host, url, method string) (*models.ValidXapiInterfaceInfo, error) {
+	q := dbsq.New(db.MyDB)
+	ctx := context.Background()
+	param := &dbsq.GetInterfaceInfoByUniFullApiParams{
+		Host:   host,
+		Url:    url,
+		Method: method,
+	}
+	data, err := q.GetInterfaceInfoByUniFullApi(ctx, param)
+	if err != nil {
+		return nil, err
+	}
+	retdata := models.ConvertToValidXapiInterfaceInfo(data)
+	return retdata, nil
+}
+
 // 注册一条接口
 func CreateInterface(param *models.CreateInterfaceParams) (sql.Result, error) {
 	nparam := models.ConvertToCreateInterfaceParams(param)

@@ -9,6 +9,7 @@ import (
 type CreateInterfaceParams struct {
 	Name           string `json:"name"`
 	Description    string `json:"description"`
+	Host           string `json:"host"`
 	Url            string `json:"url"`
 	Requestparams  string `json:"requestparams"`
 	Requestheader  string `json:"requestheader"`
@@ -20,6 +21,7 @@ type CreateInterfaceParams struct {
 type UpdateInterfaceParams struct {
 	Name           string `json:"name"`
 	Description    string `json:"description"`
+	Host           string `json:"host"`
 	Url            string `json:"url"`
 	Requestparams  string `json:"requestparams"`
 	Requestheader  string `json:"requestheader"`
@@ -42,6 +44,8 @@ type ValidXapiInterfaceInfo struct {
 	Name string `json:"name"`
 	// 描述
 	Description string `json:"description"`
+	// 接口地址
+	Host string `json:"host"`
 	// 接口地址
 	Url string `json:"url"`
 	/** 请求参数
@@ -71,6 +75,7 @@ func ConvertToValidXapiInterfaceInfo(i *dbsq.XapiInterfaceInfo) *ValidXapiInterf
 		ID:             i.ID,
 		Name:           i.Name,
 		Description:    i.Description.String, // Get the string value from sql.NullString
+		Host:           i.Host,
 		Url:            i.Url,
 		Requestparams:  i.Requestparams.String,
 		Requestheader:  i.Requestheader.String,  // Get the string value from sql.NullString
@@ -90,7 +95,8 @@ func ConvertToCreateInterfaceParams(jsonParams *CreateInterfaceParams) *dbsq.Cre
 			String: jsonParams.Description,
 			Valid:  true,
 		},
-		Url: jsonParams.Url,
+		Host: jsonParams.Host,
+		Url:  jsonParams.Url,
 		Requestparams: sql.NullString{
 			String: jsonParams.Requestparams,
 			Valid:  true,
@@ -115,7 +121,8 @@ func ConvertToUpdateInterfaceParams(jsonParams *UpdateInterfaceParams) *dbsq.Upd
 			String: jsonParams.Description,
 			Valid:  true,
 		},
-		Url: jsonParams.Url,
+		Host: jsonParams.Host,
+		Url:  jsonParams.Url,
 		Requestparams: sql.NullString{
 			String: jsonParams.Requestparams,
 			Valid:  true,

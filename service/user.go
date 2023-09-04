@@ -15,13 +15,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// 获得用户信息
-func GetUserInfo(userAccount string) (*dbsq.User, error) {
+// 根据userAccount 获得用户信息
+func GetUserInfoByUserAccount(userAccount string) (*dbsq.User, error) {
 	// todo 这里是否需要new 新的链接地址
 	q := dbsq.New(db.MyDB)
 	// 创建一个 context.Context 对象
 	ctx := context.Background()
-	return q.GetUserInfo(ctx, userAccount)
+	return q.GetUserInfoByUniUserAccount(ctx, userAccount)
+}
+
+// 根据accessKey 获得用户信息
+func GetUserInfoByAccessKey(accessKey string) (*dbsq.User, error) {
+	q := dbsq.New(db.MyDB)
+	ctx := context.Background()
+	return q.GetUserInfoByUniAccessKey(ctx, accessKey)
 }
 
 // 创建账号
@@ -42,7 +49,7 @@ func CreateUser(param *models.CreateUserParamsJSON) (sql.Result, error) {
 		return nil, errors.New("两次输入的密码不一致")
 	}
 	// 账号不能重复
-	if _, err := GetUserInfo(userAccount); err == nil {
+	if _, err := GetUserInfoByUserAccount(userAccount); err == nil {
 		return nil, errors.New("账户已存在")
 	}
 	// 将密码进行哈希
