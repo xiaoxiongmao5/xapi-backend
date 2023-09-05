@@ -10,6 +10,7 @@ import (
 	"xj/xapi-backend/db"
 	_ "xj/xapi-backend/docs"
 	"xj/xapi-backend/enums"
+	ghandle "xj/xapi-backend/g_handle"
 	"xj/xapi-backend/myerror"
 	"xj/xapi-backend/store"
 	"xj/xapi-backend/utils"
@@ -72,6 +73,7 @@ func main() {
 
 }
 
+// 捕获中断业务异常 中间件
 func ErrorHandlerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
@@ -80,10 +82,7 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 		if err := c.Errors.Last(); err != nil {
 			if abortError, ok := err.Err.(*myerror.AbortError); ok {
 				// 生成错误响应并终止请求处理
-				c.JSON(http.StatusOK, gin.H{
-					"result": abortError.Code,
-					"msg":    abortError.Message,
-				})
+				c.JSON(http.StatusOK, gin.H{"result": abortError.Code, "msg": abortError.Message})
 				c.Abort()
 				return
 			}
@@ -116,14 +115,13 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
+// 判断已登录状态的中间件
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 从请求中获取当前的 Token
 		tokenCookie, err := c.Cookie("token")
 		if err != nil || tokenCookie == "" {
-			// c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-			c.Error(myerror.NewAbortErr(int(enums.Unauthorized), "Unauthorized"))
-			c.Abort()
+			ghandle.HandlerUnauthorized(c)
 			return
 		}
 

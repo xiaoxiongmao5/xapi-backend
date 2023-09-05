@@ -33,4 +33,5 @@ const (
 	DeleteInterfaceFailed
 	OnlineInterfaceFailed
 	OfflineInterfaceFailed
+	InvokeInterfaceFailed
 )

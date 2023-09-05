@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 
@@ -41,10 +40,7 @@ func UserRegister(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"result": 0,
-		"msg":    "账号创建成功",
-	})
+	ghandle.HandlerSuccess(c, "账号创建成功", nil)
 }
 
 //	@Summary		获得用户信息
@@ -67,11 +63,7 @@ func GetUserInfoByUserAccount(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"result": 0,
-		"msg":    "success",
-		"data":   models.ConvertToNormalUser(userInfo),
-	})
+	ghandle.HandlerSuccess(c, "success", models.ConvertToNormalUser(userInfo))
 }
 
 //	@Summary		用户登录
@@ -87,7 +79,7 @@ func UserLogin(c *gin.Context) {
 	// tokenCookie, err := c.Cookie("token")
 	// if err == nil && tokenCookie != "" {
 	// 	// 已经登录，直接返回登录成功
-	// 	c.JSON(http.StatusOK, gin.H{"result": 0, "msg": "Already logged in"})
+	// ghandle.HandlerSuccess(c, "Already logged in", nil)
 	// 	return
 	// }
 	service.DeleteToken(c)
@@ -126,11 +118,7 @@ func UserLogin(c *gin.Context) {
 	domain, _ := utils.GetDomainFromReferer(c.Request.Referer())
 	c.SetCookie("token", token, 3600, "/", domain, false, true)
 
-	c.JSON(http.StatusOK, gin.H{
-		"result": 0,
-		"msg":    "success",
-		"data":   models.ConvertToNormalUser(userInfo),
-	})
+	ghandle.HandlerSuccess(c, "success", models.ConvertToNormalUser(userInfo))
 }
 
 //	@Summary		用户退出
@@ -147,8 +135,5 @@ func UserLogout(c *gin.Context) {
 	// domain, _ := utils.GetDomainFromReferer(c.Request.Referer())
 	// c.SetCookie("token", "", -1, "/", domain, false, true)
 
-	c.JSON(http.StatusOK, gin.H{
-		"result": 0,
-		"msg":    "success",
-	})
+	ghandle.HandlerSuccess(c, "success", nil)
 }

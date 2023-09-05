@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"net/http"
 	"reflect"
 	"strconv"
 	"xj/xapi-backend/enums"
@@ -37,10 +36,8 @@ func CreateInterface(c *gin.Context) {
 		c.Error(myerror.NewAbortErr(int(enums.CreateInterfaceFailed), "接口注册失败"))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"result": 0,
-		"msg":    "接口注册成功",
-	})
+
+	ghandle.HandlerSuccess(c, "接口注册成功", nil)
 }
 
 //	@Summary		更新接口信息
@@ -71,10 +68,8 @@ func UpdateInterface(c *gin.Context) {
 		c.Error(myerror.NewAbortErr(int(enums.UpdateInterfaceFailed), "接口修改失败"))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"result": 0,
-		"msg":    "接口修改成功",
-	})
+
+	ghandle.HandlerSuccess(c, "接口修改成功", nil)
 }
 
 //	@Summary		获得所有接口列表
@@ -89,11 +84,8 @@ func ListInterface(c *gin.Context) {
 		c.Error(myerror.NewAbortErr(int(enums.ListInterfaceFailed), "接口列表获取失败"))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"result": 0,
-		"msg":    "接口列表获取成功",
-		"data":   list,
-	})
+
+	ghandle.HandlerSuccess(c, "接口列表获取成功", list)
 }
 
 //	@Summary		分页获得接口列表
@@ -122,13 +114,10 @@ func PageListInterface(c *gin.Context) {
 		c.Error(myerror.NewAbortErr(int(enums.ListInterfaceFailed), "接口列表总数获取失败"))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"result": 0,
-		"msg":    "接口列表获取成功",
-		"data": gin.H{
-			"record": list,
-			"total":  count,
-		},
+
+	ghandle.HandlerSuccess(c, "接口列表获取成功", gin.H{
+		"record": list,
+		"total":  count,
 	})
 }
 
@@ -163,11 +152,8 @@ func GetInterfaceInfoById(c *gin.Context) {
 		c.Error(myerror.NewAbortErr(int(enums.InterfaceNotExist), "接口信息获取失败"))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"result": 0,
-		"msg":    "接口信息获取成功",
-		"data":   data,
-	})
+
+	ghandle.HandlerSuccess(c, "接口信息获取成功", data)
 }
 
 //	@Summary		删除接口
@@ -196,10 +182,8 @@ func DeleteInterface(c *gin.Context) {
 		c.Error(myerror.NewAbortErr(int(enums.DeleteInterfaceFailed), "接口删除失败"))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"result": 0,
-		"msg":    "接口删除成功",
-	})
+
+	ghandle.HandlerSuccess(c, "接口删除成功", nil)
 }
 
 //	@Summary		发布接口
@@ -232,10 +216,7 @@ func OnlineInterface(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"result": 0,
-		"msg":    "接口发布成功",
-	})
+	ghandle.HandlerSuccess(c, "接口发布成功", nil)
 }
 
 //	@Summary		下线接口
@@ -267,10 +248,7 @@ func OfflineInterface(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"result": 0,
-		"msg":    "接口下线成功",
-	})
+	ghandle.HandlerSuccess(c, "接口下线成功", nil)
 }
 
 //	@Summary		调用接口
@@ -337,17 +315,13 @@ func InvokeInterface(c *gin.Context) {
 	result := method.Call(reflectArgs)
 	// 如果没有返回值或提取值无效，返回错误
 	if len(result) < 4 {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "No valid data found",
-		})
+		c.Error(myerror.NewAbortErr(int(enums.InvokeInterfaceFailed), "调用接口返回值格式校验失败"))
 		return
 	}
 	// 提取 statusCode
 	statusCode, ok := result[0].Interface().(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Invalid statusCode",
-		})
+		c.Error(myerror.NewAbortErr(int(enums.InvokeInterfaceFailed), "调用接口返回无效的statusCode"))
 		return
 	}
 	fmt.Printf("statusCode=%v \ttype=%T\n", statusCode, statusCode)
@@ -355,9 +329,7 @@ func InvokeInterface(c *gin.Context) {
 	// 提取 contentType
 	contentType, ok := result[1].Interface().(string)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Invalid contentType",
-		})
+		c.Error(myerror.NewAbortErr(int(enums.InvokeInterfaceFailed), "调用接口返回无效的contentType"))
 		return
 	}
 	fmt.Printf("contentType=%v \ttype=%T\n", contentType, contentType)
@@ -365,9 +337,7 @@ func InvokeInterface(c *gin.Context) {
 	// 提取 bodyBytes
 	bodyBytes, ok := result[2].Interface().([]byte)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Invalid bodyBytes",
-		})
+		c.Error(myerror.NewAbortErr(int(enums.InvokeInterfaceFailed), "调用接口返回无效的bodyBytes"))
 		return
 	}
 	fmt.Printf("bodyBytes=%v \ttype=%T\n", string(bodyBytes), bodyBytes)
@@ -377,9 +347,7 @@ func InvokeInterface(c *gin.Context) {
 	if ok {
 		fmt.Printf("bodyError=%v  \ttype=%T\n", bodyError, bodyError)
 		// todo 这里可以降级处理
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "调用接口返回失败",
-		})
+		c.Error(myerror.NewAbortErr(int(enums.InvokeInterfaceFailed), "调用接口返回错误: "+bodyError.Error()))
 		return
 	}
 	// 使用提取的值调用 c.Data 将响应体内容直接返回给前端
