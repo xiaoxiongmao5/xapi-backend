@@ -303,8 +303,9 @@ func InvokeInterface(c *gin.Context) {
 	}
 
 	// 准备要传递的参数
-	reflectArgs := make([]reflect.Value, 1)
+	reflectArgs := make([]reflect.Value, 2)
 	reflectArgs[0] = reflect.ValueOf(params.Requestparams)
+	reflectArgs[1] = reflect.ValueOf(params.ID)
 
 	// 利用反射调用对应的函数
 	method := reflect.ValueOf(clientsdk).MethodByName(funcName)
