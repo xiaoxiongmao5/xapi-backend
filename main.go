@@ -38,7 +38,17 @@ func init() {
 		panic(err)
 	}
 	store.TokenMemoryStore = make(map[string]bool)
+	InitInterfaceFuncName()
 	db.MyDB = db.ConnectionPool("root:@/xapi?charset=utf8&parseTime=true")
+}
+
+func InitInterfaceFuncName() {
+	store.InterfaceFuncName = make(map[int64]string)
+	store.InterfaceFuncName = map[int64]string{
+		1: "GetNameByGet",
+		2: "GetNameByGet",
+		3: "GetNameByPost",
+	}
 }
 
 //	@title			xApi 项目

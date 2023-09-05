@@ -59,18 +59,8 @@ func CreateUser(param *models.CreateUserParamsJSON) (sql.Result, error) {
 		return nil, err
 	}
 	// 分配accessKey,secretKey
-	var rand5, rand8 string
-
-	if rand5, err = utils.GenerateRandomKey(5); err != nil {
-		fmt.Printf("utils.GenerateRandomKey err=%v \n", err)
-		return nil, err
-	}
-	if rand8, err = utils.GenerateRandomKey(8); err != nil {
-		fmt.Printf("utils.GenerateRandomKey err=%v \n", err)
-		return nil, err
-	}
-	accessKey := utils.HashBySHA256WithSalt(userAccount+rand5, config.SALT)
-	secretKey := utils.HashBySHA256WithSalt(userAccount+rand8, config.SALT)
+	accessKey := utils.HashBySHA256WithSalt(userAccount+utils.GenetateRandomString(5), config.SALT)
+	secretKey := utils.HashBySHA256WithSalt(userAccount+utils.GenetateRandomString(8), config.SALT)
 
 	params := &dbsq.CreateUserParams{
 		Useraccount:  userAccount,
