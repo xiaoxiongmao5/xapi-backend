@@ -6,11 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"xj/xapi-backend/enums"
+	gerror "xj/xapi-backend/g_error"
 	ghandle "xj/xapi-backend/g_handle"
+	gstore "xj/xapi-backend/g_store"
 	"xj/xapi-backend/models"
-	"xj/xapi-backend/myerror"
 	service "xj/xapi-backend/service"
-	"xj/xapi-backend/store"
 	"xj/xapi-backend/utils"
 
 	_ "github.com/go-sql-driver/mysql" //导入
@@ -29,14 +29,14 @@ func UserRegister(c *gin.Context) {
 	var params *models.CreateUserParamsJSON
 	if err := c.ShouldBindJSON(&params); err != nil {
 		fmt.Printf("param CreateUserParamsJSON err=%v \n", err.Error())
-		c.Error(myerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
+		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
 
 	// 注册用户
 	if _, err := service.CreateUser(params); err != nil {
 		fmt.Printf("service.CreateUser err=%v \n", err)
-		c.Error(myerror.NewAbortErr(int(enums.CreateUserFailed), err.Error()))
+		c.Error(gerror.NewAbortErr(int(enums.CreateUserFailed), err.Error()))
 		return
 	}
 
@@ -59,7 +59,7 @@ func GetUserInfoByUserAccount(c *gin.Context) {
 	userInfo, err := service.GetUserInfoByUserAccount(useraccount.(string))
 	if err != nil {
 		fmt.Printf("q.GetUserInfoByUserAccount err=%v \n", err)
-		c.Error(myerror.NewAbortErr(int(enums.UserNotExist), "用户不存在"))
+		c.Error(gerror.NewAbortErr(int(enums.UserNotExist), "用户不存在"))
 		return
 	}
 
@@ -91,7 +91,7 @@ func UserLogin(c *gin.Context) {
 	userInfo, err := service.GetUserInfoByUserAccount(useraccount)
 	if err != nil {
 		fmt.Printf("q.GetUserInfoByUserAccount err=%v \n", err)
-		c.Error(myerror.NewAbortErr(int(enums.UserNotExist), "账号不存在"))
+		c.Error(gerror.NewAbortErr(int(enums.UserNotExist), "账号不存在"))
 		return
 	}
 	fmt.Printf("拿到用户信息了%v \n", userInfo)
@@ -99,7 +99,7 @@ func UserLogin(c *gin.Context) {
 	// 验证密码是否正常
 	if err := utils.CheckHashPasswordByBcrypt(userInfo.Userpassword, userpassword); err != nil {
 		fmt.Printf("CheckHashPasswordByBcrypt err=%v \n", err)
-		c.Error(myerror.NewAbortErr(int(enums.UserPasswordError), "账号不存在或者密码验证错误"))
+		c.Error(gerror.NewAbortErr(int(enums.UserPasswordError), "账号不存在或者密码验证错误"))
 		return
 	}
 
@@ -107,12 +107,12 @@ func UserLogin(c *gin.Context) {
 	token, err := utils.GenerateToken(useraccount, userInfo.Userrole)
 	if err != nil {
 		fmt.Printf("utils.GenerateToken err=%v \n", err)
-		c.Error(myerror.NewAbortErr(int(enums.GenerateTokenFailed), err.Error()))
+		c.Error(gerror.NewAbortErr(int(enums.GenerateTokenFailed), err.Error()))
 		return
 	}
 
 	// 存储token
-	store.TokenMemoryStore[token] = true
+	gstore.TokenMemoryStore[token] = true
 
 	// 返回token到前端
 	domain, _ := utils.GetDomainFromReferer(c.Request.Referer())

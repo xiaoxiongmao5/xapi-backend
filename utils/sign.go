@@ -7,7 +7,7 @@ import (
 	"encoding/hex"
 	"math/rand"
 	"time"
-	"xj/xapi-backend/config"
+	gconfig "xj/xapi-backend/g_config"
 
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
@@ -22,7 +22,7 @@ func GenerateToken(userID, userRole string) (string, error) {
 		"exp":       time.Now().Add(time.Hour * 1).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(config.SecretKey))
+	return token.SignedString([]byte(gconfig.SecretKey))
 }
 
 /** 加密密码（bcrypt 哈希算法）

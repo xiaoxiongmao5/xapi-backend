@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"xj/xapi-backend/config"
 	"xj/xapi-backend/db"
 	"xj/xapi-backend/dbsq"
+	gconfig "xj/xapi-backend/g_config"
+	gstore "xj/xapi-backend/g_store"
 	"xj/xapi-backend/models"
-	"xj/xapi-backend/store"
 	"xj/xapi-backend/utils"
 
 	"github.com/gin-gonic/gin"
@@ -59,8 +59,8 @@ func CreateUser(param *models.CreateUserParamsJSON) (sql.Result, error) {
 		return nil, err
 	}
 	// 分配accessKey,secretKey
-	accessKey := utils.HashBySHA256WithSalt(userAccount+utils.GenetateRandomString(5), config.SALT)
-	secretKey := utils.HashBySHA256WithSalt(userAccount+utils.GenetateRandomString(8), config.SALT)
+	accessKey := utils.HashBySHA256WithSalt(userAccount+utils.GenetateRandomString(5), gconfig.SALT)
+	secretKey := utils.HashBySHA256WithSalt(userAccount+utils.GenetateRandomString(8), gconfig.SALT)
 
 	params := &dbsq.CreateUserParams{
 		Useraccount:  userAccount,
@@ -82,5 +82,5 @@ func DeleteToken(c *gin.Context) {
 	}
 
 	// 从服务端删除该token
-	delete(store.TokenMemoryStore, tokenCookie)
+	delete(gstore.TokenMemoryStore, tokenCookie)
 }

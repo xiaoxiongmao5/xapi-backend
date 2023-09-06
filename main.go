@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"xj/xapi-backend/config"
 	controller "xj/xapi-backend/controller"
 	"xj/xapi-backend/db"
 	_ "xj/xapi-backend/docs"
 	"xj/xapi-backend/enums"
+	gconfig "xj/xapi-backend/g_config"
+	gerror "xj/xapi-backend/g_error"
 	ghandle "xj/xapi-backend/g_handle"
-	"xj/xapi-backend/myerror"
-	"xj/xapi-backend/store"
+	gstore "xj/xapi-backend/g_store"
 	"xj/xapi-backend/utils"
 
 	_ "xj/xapi-backend/rpc_api_service"
@@ -38,14 +38,14 @@ func init() {
 	if err := dubboConfig.Load(); err != nil {
 		panic(err)
 	}
-	store.TokenMemoryStore = make(map[string]bool)
+	gstore.TokenMemoryStore = make(map[string]bool)
 	InitInterfaceFuncName()
 	db.MyDB = db.ConnectionPool("root:@/xapi?charset=utf8&parseTime=true")
 }
 
 func InitInterfaceFuncName() {
-	store.InterfaceFuncName = make(map[int64]string)
-	store.InterfaceFuncName = map[int64]string{
+	gstore.InterfaceFuncName = make(map[int64]string)
+	gstore.InterfaceFuncName = map[int64]string{
 		1: "GetNameByGet",
 		2: "GetNameByGet",
 		3: "GetNameByPost",
@@ -74,13 +74,13 @@ func main() {
 }
 
 // 捕获中断业务异常 中间件
-func ErrorHandlerMiddleware() gin.HandlerFunc {
+func G_ErrorHandlerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
 		// 判断上层业务抛出的错误类型
 		if err := c.Errors.Last(); err != nil {
-			if abortError, ok := err.Err.(*myerror.AbortError); ok {
+			if abortError, ok := err.Err.(*gerror.AbortError); ok {
 				// 生成错误响应并终止请求处理
 				c.JSON(http.StatusOK, gin.H{"result": abortError.Code, "msg": abortError.Message})
 				c.Abort()
@@ -127,10 +127,10 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		// 验证当前 Token
 		token, err := jwt.Parse(tokenCookie, func(token *jwt.Token) (interface{}, error) {
-			return []byte(config.SecretKey), nil
+			return []byte(gconfig.SecretKey), nil
 		})
 		if err != nil || !token.Valid {
-			c.Error(myerror.NewAbortErr(int(enums.Unauthorized), "Unauthorized"))
+			c.Error(gerror.NewAbortErr(int(enums.Unauthorized), "Unauthorized"))
 			c.Abort()
 			return
 		}
@@ -138,7 +138,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		// 从 Token 中获取用户信息
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
-			c.Error(myerror.NewAbortErr(int(enums.Unauthorized), "Unauthorized"))
+			c.Error(gerror.NewAbortErr(int(enums.Unauthorized), "Unauthorized"))
 			c.Abort()
 			return
 		}
@@ -148,16 +148,16 @@ func AuthMiddleware() gin.HandlerFunc {
 		userRole := claims["user_role"].(string)
 		newToken, err := utils.GenerateToken(userID, userRole)
 		if err != nil {
-			c.Error(myerror.NewAbortErr(int(enums.GenerateTokenFailed), err.Error()))
+			c.Error(gerror.NewAbortErr(int(enums.GenerateTokenFailed), err.Error()))
 			c.Abort()
 			return
 		}
 
 		// 删除旧的 token
-		delete(store.TokenMemoryStore, tokenCookie)
+		delete(gstore.TokenMemoryStore, tokenCookie)
 
 		// 更新内存中的 token 数据
-		store.TokenMemoryStore[newToken] = true
+		gstore.TokenMemoryStore[newToken] = true
 
 		// 将新的 token 返回给前端
 		domain, _ := utils.GetDomainFromReferer(c.Request.Referer())
@@ -175,7 +175,7 @@ func AdminAuthMiddleware(c *gin.Context) {
 	// 从上下文中获取用户信息
 	userrole, exists := c.Get("user_role")
 	if !exists || userrole.(string) != "admin" {
-		c.Error(myerror.NewAbortErr(int(enums.NotAdminRole), "无权限"))
+		c.Error(gerror.NewAbortErr(int(enums.NotAdminRole), "无权限"))
 		c.Abort()
 		return
 	}
@@ -185,7 +185,7 @@ func AdminAuthMiddleware(c *gin.Context) {
 func setupRouter() *gin.Engine {
 	r := gin.New()
 	// 使用自定义的中间件处理全局错误拦截
-	r.Use(ErrorHandlerMiddleware())
+	r.Use(G_ErrorHandlerMiddleware())
 	// 使用中间件来处理跨域请求，并允许携带 Cookie
 	r.Use(CORSMiddleware())
 

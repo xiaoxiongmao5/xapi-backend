@@ -92,10 +92,21 @@ go clean -testcache //清除测试缓存
 
 ## 其他补充
 
+* 使用 `swag` 生成接口文档命令
+    ```bash
+    swag fmt
+    swag init 
+    ```
+
 * 在使用swag生成接口文档后，运行下面指令：将swagger.json挂在服务器上。然后提供地址 `http://<挂载的服务器IP:端口>/swagger.json` 给前端。前端可以在此基础上使用插件自动生成接口请求代码。
 比如在[xapi-frontend项目中]运行`npm run openapi`（"openapi": "max openapi"） 可生成对应的接口函数。
 
     ```bash
     cd ./docs
     python3 -m http.server
+    ```
+
+* 使用 `sqlc` 自动生成后端 CRUD 基础代码的命令
+    ```bash
+    sqlc generate
     ```
