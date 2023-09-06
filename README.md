@@ -24,6 +24,8 @@
     * 功能：模拟第三方接口，供客户端SDK调用，用于开发和测试。
 
 ## 接口调用流程图示
+![image](https://github.com/xiaoxiongmao5/xapi-backend/assets/25204083/fa3513b8-f58c-4fa7-ac6a-e4917749f636)
+
 
 ## 技术栈
 
