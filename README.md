@@ -1,11 +1,58 @@
+# xapi 项目
+
+在线体验地址：[X API]()
+
+## 项目介绍
+
+一个提供 API 接口供开发者调用的平台。基于 React + Golang + Dubbo-go + Gateway 技术实现。
+
+管理员可以接入并发布接口，同时统计分析各接口的调用情况；用户可以注册登录并开通接口调用权限，浏览接口以及在线进行调试，并可以使用 SDK 轻松地在代码中调用接口。
+
+## 项目架构设计
+
+这个项目的架构是一个典型的分布式系统，包括多个独立的子项目，每个子项目具有特定的功能和职责。以下是每个子项目的功能和关系。
+
+1. 前端项目 [项目仓库: xapi-frontend](https://github.com/xiaoxiongmao5/xapi-frontend)
+    * 功能：提供用户界面，用户可以登录、查看接口列表、发起接口调用。
+2. 后端项目 [项目仓库: xapi-backend](https://github.com/xiaoxiongmao5/xapi-backend)
+    * 功能：提供用户认证、接口管理、账号管理、接口调用功能。
+3. 网关项目 [项目仓库: xapi-gateway](https://github.com/xiaoxiongmao5/xapi-gateway)
+    * 功能：统一鉴权、限流、路由转发、统一日志、接口染色、统一业务处理等。
+4. 客户端SDK项目 [项目仓库: xapi-clientsdk](https://github.com/xiaoxiongmao5/xapi-clientsdk)
+    * 功能：封装了对模拟接口项目的调用，提供了简化的API以便其他项目使用。
+5. 模拟接口项目 (这里我直接使用的是在线的第三方服务)
+    * 功能：模拟第三方接口，供客户端SDK调用，用于开发和测试。
+
+## 接口调用流程图示
+
+## 技术栈
+
+### 后端技术栈
+* 主语言：Golang
+* 框架：Gin
+* 数据库：Mysql8.0、Redis
+* 注册中心：Nacos
+* RPC远程调用：Dubbo-go
+* 微服务网关：Gin
+* 接口文档生成：swagger
+* 技术设计：API签名认证
+
+### 前端技术栈
+
+* 开发框架：React、Umi 4
+* 脚手架：Ant Design Pro
+* 组件库：Ant Design、Ant Design Components
+* 语法扩展：TypeScript、Less
+* 打包工具：Webpack
+* 代码规范：ESLint、StyleLint、Prettier
+* 图表展示：Echats
+* 接口代码生成：OpenAPI
+
 # xapi-backend (API开放平台-后端)
 
 ## 项目概述
 
 本项目是一个面向开发者的API平台，提供API接口供开发者调用。用户通过注册登录，可以开通接口调用权限，并可以浏览和调用接口。每次调用都会进行统计，用户可以根据统计数据进行分析和优化。管理员可以发布接口、下线接口、接入接口，并可视化接口的调用情况和数据。
-
-## 项目架构
-
 
 ## 项目本地启动
 
