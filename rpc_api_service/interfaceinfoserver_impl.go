@@ -13,25 +13,26 @@ type IntefaceInfoServerImpl struct {
 	rpc_api.UnimplementedIntefaceInfoServer
 }
 
-func (s *IntefaceInfoServerImpl) GetInterfaceInfo(ctx context.Context, in *rpc_api.GetInterfaceInfoReq) (*rpc_api.GetInterfaceInfoResp, error) {
-	logger.Infof("Dubbo-go GetInterfaceInfo: Host = %s, Path = %s, Method = %s\n", in.Host, in.Path, in.Method)
-	data, err := service.GetInterfaceInfoByUniFullApi(in.Host, in.Path, in.Method)
+func (s *IntefaceInfoServerImpl) GetInterfaceInfoById(ctx context.Context, in *rpc_api.GetInterfaceInfoByIdReq) (*rpc_api.GetInterfaceInfoByIdResp, error) {
+	logger.Infof("Dubbo-go GetInterfaceInfoById: InterfaceId = %d\n", in.InterfaceId)
+	data, err := service.GetInterfaceInfoById(in.InterfaceId)
 	if err != nil {
 		return nil, err
 	}
-	return ConvertValidXapiInterfaceInfoToGetInterfaceInfoResp(data)
+	return ConvertValidXapiInterfaceInfoToGetInterfaceInfoByIdResp(data)
 }
 
-// 定义一个函数将 ValidXapiInterfaceInfo 结构体转换为 GetInterfaceInfoResp 消息
-func ConvertValidXapiInterfaceInfoToGetInterfaceInfoResp(info *models.ValidXapiInterfaceInfo) (*rpc_api.GetInterfaceInfoResp, error) {
+// 定义一个函数将 ValidXapiInterfaceInfo 结构体转换为 GetInterfaceInfoByIdResp 消息
+func ConvertValidXapiInterfaceInfoToGetInterfaceInfoByIdResp(info *models.ValidXapiInterfaceInfo) (*rpc_api.GetInterfaceInfoByIdResp, error) {
 	createTime := ConvertTimeToTimestamp(info.Createtime)
 	updateTime := ConvertTimeToTimestamp(info.Updatetime)
 
-	// 创建 GetInterfaceInfoResp 消息并赋值字段
-	resp := &rpc_api.GetInterfaceInfoResp{
+	// 创建 GetInterfaceInfoByIdResp 消息并赋值字段
+	resp := &rpc_api.GetInterfaceInfoByIdResp{
 		Id:             info.ID,
 		Name:           info.Name,
 		Description:    info.Description,
+		Host:           info.Host,
 		Url:            info.Url,
 		Requestparams:  info.Requestparams,
 		Requestheader:  info.Requestheader,

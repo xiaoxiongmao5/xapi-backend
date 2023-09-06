@@ -38,3 +38,9 @@ func HandlerSuccess(c *gin.Context, msg string, data any) {
 	}
 	c.JSON(http.StatusOK, gin.H{"result": 0, "msg": msg, "data": data})
 }
+
+// Dubbo加载失败 424
+func HandlerDobboLoadFailed(c *gin.Context, msg string) {
+	c.JSON(http.StatusFailedDependency, gin.H{"result": http.StatusFailedDependency, "msg": "Dubbo加载失败: " + msg})
+	c.Abort()
+}
