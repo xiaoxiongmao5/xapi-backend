@@ -1,9 +1,12 @@
 package enums
 
-type InterfaceStatus int
-
 const (
 	// InterfaceStatus
-	InterfaceStatusOffline InterfaceStatus = iota
+	InterfaceStatusOffline int32 = iota
 	InterfaceStatusOnline
+)
+
+const (
+	UserInterfaceStatusOk int32 = iota
+	UserInterfaceStatuBan
 )

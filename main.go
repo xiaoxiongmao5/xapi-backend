@@ -144,9 +144,9 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		// 重新生成 Token，并更新有效期
-		userID := claims["user_id"].(string)
+		userAccount := claims["user_account"].(string)
 		userRole := claims["user_role"].(string)
-		newToken, err := utils.GenerateToken(userID, userRole)
+		newToken, err := utils.GenerateToken(userAccount, userRole)
 		if err != nil {
 			c.Error(gerror.NewAbortErr(int(enums.GenerateTokenFailed), err.Error()))
 			c.Abort()
@@ -164,7 +164,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		c.SetCookie("token", newToken, 3600, "/", domain, false, true)
 
 		// 在此可以将 claims 中的用户信息保存到上下文中，供后续处理使用
-		c.Set("user_id", claims["user_id"])
+		c.Set("user_account", claims["user_account"])
 		c.Set("user_role", claims["user_role"])
 
 		c.Next()
@@ -210,5 +210,8 @@ func setupRouter() *gin.Engine {
 
 	r.POST("/api/invoke", AuthMiddleware(), controller.InvokeInterface)
 
+	userInterfaceinfoRouter := r.Group("/userinterface", AuthMiddleware())
+	userInterfaceinfoRouter.GET("/:id", controller.GetUserInterfaceInfoById)
+	userInterfaceinfoRouter.POST("/update/leftcount", controller.UpdateInvokeLeftCount)
 	return r
 }

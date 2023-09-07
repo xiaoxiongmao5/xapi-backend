@@ -15,11 +15,11 @@ import (
 
 /** 生成登录验证token（jwt）
  */
-func GenerateToken(userID, userRole string) (string, error) {
+func GenerateToken(userAccount, userRole string) (string, error) {
 	claims := jwt.MapClaims{
-		"user_id":   userID,
-		"user_role": userRole,
-		"exp":       time.Now().Add(time.Hour * 1).Unix(),
+		"user_account": userAccount,
+		"user_role":    userRole,
+		"exp":          time.Now().Add(time.Hour * 1).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(gconfig.SecretKey))

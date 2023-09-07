@@ -6,6 +6,7 @@ import (
 	"xj/xapi-backend/dbsq"
 )
 
+// 注册接口参数
 type CreateInterfaceParams struct {
 	Name           string `json:"name"`
 	Description    string `json:"description"`
@@ -18,6 +19,7 @@ type CreateInterfaceParams struct {
 	Userid         int64  `json:"userid"`
 }
 
+// 更新接口信息参数
 type UpdateInterfaceParams struct {
 	Name           string `json:"name"`
 	Description    string `json:"description"`
@@ -31,13 +33,14 @@ type UpdateInterfaceParams struct {
 	ID             int64  `json:"id"`
 }
 
+// 调用接口参数
 type InvokeInterfaceParams struct {
 	ID            int64  `json:"id"`
 	Requestparams string `json:"requestparams"`
 }
 
-// 接口信息
-type ValidXapiInterfaceInfo struct {
+// 根据接口id获取接口信息 响应值
+type ValidInterfaceInfo struct {
 	// 主键
 	ID int64 `json:"id"`
 	// 名称
@@ -70,8 +73,8 @@ type ValidXapiInterfaceInfo struct {
 	Updatetime time.Time `json:"updatetime"`
 }
 
-func ConvertToValidXapiInterfaceInfo(i *dbsq.XapiInterfaceInfo) *ValidXapiInterfaceInfo {
-	return &ValidXapiInterfaceInfo{
+func Convert2ValidXapiInterfaceInfo(i *dbsq.XapiInterfaceInfo) *ValidInterfaceInfo {
+	return &ValidInterfaceInfo{
 		ID:             i.ID,
 		Name:           i.Name,
 		Description:    i.Description.String, // Get the string value from sql.NullString
@@ -88,7 +91,7 @@ func ConvertToValidXapiInterfaceInfo(i *dbsq.XapiInterfaceInfo) *ValidXapiInterf
 	}
 }
 
-func ConvertToCreateInterfaceParams(jsonParams *CreateInterfaceParams) *dbsq.CreateInterfaceParams {
+func Convert2CreateInterfaceParams(jsonParams *CreateInterfaceParams) *dbsq.CreateInterfaceParams {
 	return &dbsq.CreateInterfaceParams{
 		Name: jsonParams.Name,
 		Description: sql.NullString{
@@ -114,7 +117,7 @@ func ConvertToCreateInterfaceParams(jsonParams *CreateInterfaceParams) *dbsq.Cre
 	}
 }
 
-func ConvertToUpdateInterfaceParams(jsonParams *UpdateInterfaceParams) *dbsq.UpdateInterfaceParams {
+func Convert2UpdateInterfaceParams(jsonParams *UpdateInterfaceParams) *dbsq.UpdateInterfaceParams {
 	return &dbsq.UpdateInterfaceParams{
 		Name: jsonParams.Name,
 		Description: sql.NullString{

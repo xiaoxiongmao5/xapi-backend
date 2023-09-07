@@ -34,4 +34,5 @@ const (
 	OnlineInterfaceFailed
 	OfflineInterfaceFailed
 	InvokeInterfaceFailed
+	UpdateInvokeLeftCountFailed
 )

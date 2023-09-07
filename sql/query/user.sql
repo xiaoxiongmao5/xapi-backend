@@ -1,3 +1,7 @@
+-- name: GetUserInfoById :one
+SELECT * FROM `user`
+WHERE `id` = ? AND `isDelete` = 0 LIMIT 1;
+
 -- name: GetUserInfoByUniUserAccount :one
 SELECT * FROM `user`
 WHERE `userAccount` = ? AND `isDelete` = 0 LIMIT 1;

@@ -11,19 +11,19 @@ import (
 )
 
 // 根据接口ID 获得接口信息
-func GetInterfaceInfoById(id int64) (*models.ValidXapiInterfaceInfo, error) {
+func GetInterfaceInfoById(id int64) (*models.ValidInterfaceInfo, error) {
 	q := dbsq.New(db.MyDB)
 	ctx := context.Background()
 	data, err := q.GetInterfaceInfoById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	retdata := models.ConvertToValidXapiInterfaceInfo(data)
+	retdata := models.Convert2ValidXapiInterfaceInfo(data)
 	return retdata, nil
 }
 
 // 根据 host+url+method 获得接口信息
-func GetInterfaceInfoByUniFullApi(host, url, method string) (*models.ValidXapiInterfaceInfo, error) {
+func GetInterfaceInfoByUniFullApi(host, url, method string) (*models.ValidInterfaceInfo, error) {
 	q := dbsq.New(db.MyDB)
 	ctx := context.Background()
 	param := &dbsq.GetInterfaceInfoByUniFullApiParams{
@@ -35,13 +35,13 @@ func GetInterfaceInfoByUniFullApi(host, url, method string) (*models.ValidXapiIn
 	if err != nil {
 		return nil, err
 	}
-	retdata := models.ConvertToValidXapiInterfaceInfo(data)
+	retdata := models.Convert2ValidXapiInterfaceInfo(data)
 	return retdata, nil
 }
 
 // 注册一条接口
 func CreateInterface(param *models.CreateInterfaceParams) (sql.Result, error) {
-	nparam := models.ConvertToCreateInterfaceParams(param)
+	nparam := models.Convert2CreateInterfaceParams(param)
 	q := dbsq.New(db.MyDB)
 	ctx := context.Background()
 	return q.CreateInterface(ctx, nparam)
@@ -49,7 +49,7 @@ func CreateInterface(param *models.CreateInterfaceParams) (sql.Result, error) {
 
 // 更新接口信息
 func UpdateInterface(param *models.UpdateInterfaceParams) error {
-	nparam := models.ConvertToUpdateInterfaceParams(param)
+	nparam := models.Convert2UpdateInterfaceParams(param)
 	q := dbsq.New(db.MyDB)
 	ctx := context.Background()
 	return q.UpdateInterface(ctx, nparam)
@@ -62,16 +62,16 @@ func DeleteInterface(id int64) error {
 	return q.DeleteInterface(ctx, id)
 }
 
-func ConvertSliceToValidXapiInterfaceInfo(slice []*dbsq.XapiInterfaceInfo) []*models.ValidXapiInterfaceInfo {
-	result := make([]*models.ValidXapiInterfaceInfo, len(slice))
+func ConvertSliceToValidXapiInterfaceInfo(slice []*dbsq.XapiInterfaceInfo) []*models.ValidInterfaceInfo {
+	result := make([]*models.ValidInterfaceInfo, len(slice))
 	for i, item := range slice {
-		result[i] = models.ConvertToValidXapiInterfaceInfo(item)
+		result[i] = models.Convert2ValidXapiInterfaceInfo(item)
 	}
 	return result
 }
 
 // 获得所有接口列表
-func AllListInterfaces() ([]*models.ValidXapiInterfaceInfo, error) {
+func AllListInterfaces() ([]*models.ValidInterfaceInfo, error) {
 	q := dbsq.New(db.MyDB)
 	ctx := context.Background()
 	res, error := q.ListInterfaces(ctx)
@@ -82,7 +82,7 @@ func AllListInterfaces() ([]*models.ValidXapiInterfaceInfo, error) {
 }
 
 // 分页获得接口列表
-func PageListInterfaces(current, pageSize int) ([]*models.ValidXapiInterfaceInfo, error) {
+func PageListInterfaces(current, pageSize int) ([]*models.ValidInterfaceInfo, error) {
 	limit, offset := utils.CalculateLimitOffset(current, pageSize)
 	q := dbsq.New(db.MyDB)
 	ctx := context.Background()

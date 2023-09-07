@@ -22,13 +22,13 @@ import (
 //	@Tags			用户相关
 //	@Accept			application/json
 //	@Produce		application/json
-//	@Param			request	body		models.CreateUserParamsJSON	true	"注册信息"
+//	@Param			request	body		models.UserRegisterParams	true	"注册信息"
 //	@Success		200		{object}	object
 //	@Router			/user/register [post]
 func UserRegister(c *gin.Context) {
-	var params *models.CreateUserParamsJSON
+	var params *models.UserRegisterParams
 	if err := c.ShouldBindJSON(&params); err != nil {
-		fmt.Printf("param CreateUserParamsJSON err=%v \n", err.Error())
+		fmt.Printf("UserRegisterParams err=%v \n", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
@@ -50,9 +50,9 @@ func UserRegister(c *gin.Context) {
 //	@Success		200	{object}	object	"用户信息"
 //	@Router			/user/uinfo [get]
 func GetUserInfoByUserAccount(c *gin.Context) {
-	useraccount, exists := c.Get("user_id")
+	useraccount, exists := c.Get("user_account")
 	if !exists {
-		ghandle.HandlerContextError(c, "user_id")
+		ghandle.HandlerContextError(c, "user_account")
 		return
 	}
 
@@ -71,7 +71,7 @@ func GetUserInfoByUserAccount(c *gin.Context) {
 //	@Tags			用户相关
 //	@Accept			application/x-www-form-urlencoded
 //	@Produce		application/json
-//	@Param			request	formData	models.UserLoginParamsJSON	true	"账号密码"
+//	@Param			request	formData	models.UserLoginParams	true	"账号密码"
 //	@Success		200		{object}	object
 //	@Router			/user/login [post]
 func UserLogin(c *gin.Context) {

@@ -19,16 +19,16 @@ func (s *IntefaceInfoServerImpl) GetInterfaceInfoById(ctx context.Context, in *r
 	if err != nil {
 		return nil, err
 	}
-	return ConvertValidXapiInterfaceInfoToGetInterfaceInfoByIdResp(data)
+	return Convert2GetInterfaceInfoByIdResp(data), nil
 }
 
-// 定义一个函数将 ValidXapiInterfaceInfo 结构体转换为 GetInterfaceInfoByIdResp 消息
-func ConvertValidXapiInterfaceInfoToGetInterfaceInfoByIdResp(info *models.ValidXapiInterfaceInfo) (*rpc_api.GetInterfaceInfoByIdResp, error) {
+// 定义一个函数将 ValidInterfaceInfo 结构体转换为 GetInterfaceInfoByIdResp 消息
+func Convert2GetInterfaceInfoByIdResp(info *models.ValidInterfaceInfo) *rpc_api.GetInterfaceInfoByIdResp {
 	createTime := ConvertTimeToTimestamp(info.Createtime)
 	updateTime := ConvertTimeToTimestamp(info.Updatetime)
 
 	// 创建 GetInterfaceInfoByIdResp 消息并赋值字段
-	resp := &rpc_api.GetInterfaceInfoByIdResp{
+	return &rpc_api.GetInterfaceInfoByIdResp{
 		Id:             info.ID,
 		Name:           info.Name,
 		Description:    info.Description,
@@ -43,6 +43,4 @@ func ConvertValidXapiInterfaceInfoToGetInterfaceInfoByIdResp(info *models.ValidX
 		Createtime:     createTime,
 		Updatetime:     updateTime,
 	}
-
-	return resp, nil
 }

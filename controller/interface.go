@@ -26,7 +26,7 @@ import (
 func CreateInterface(c *gin.Context) {
 	var params *models.CreateInterfaceParams
 	if err := c.ShouldBindJSON(&params); err != nil {
-		fmt.Printf("param CreateInterfaceParams err=%v \n", err.Error())
+		fmt.Printf("CreateInterfaceParams err=%v \n", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
@@ -51,7 +51,7 @@ func CreateInterface(c *gin.Context) {
 func UpdateInterface(c *gin.Context) {
 	var params *models.UpdateInterfaceParams
 	if err := c.ShouldBindJSON(&params); err != nil {
-		fmt.Printf("param UpdateInterfaceParams err=%v \n", err.Error())
+		fmt.Printf("UpdateInterfaceParams err=%v \n", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
@@ -121,10 +121,10 @@ func PageListInterface(c *gin.Context) {
 	})
 }
 
-type ResponseWithData struct {
-	Result int                           `json:"result"`
-	Msg    string                        `json:"msg"`
-	Data   models.ValidXapiInterfaceInfo `json:"data"`
+type GetInterfaceInfoByIdResponse struct {
+	Result int                       `json:"result"`
+	Msg    string                    `json:"msg"`
+	Data   models.ValidInterfaceInfo `json:"data"`
 }
 
 //	@Summary		根据接口id获取接口信息
@@ -132,8 +132,8 @@ type ResponseWithData struct {
 //	@Tags			接口相关
 //	@Accept			application/x-www-form-urlencoded
 //	@Produce		application/json
-//	@Param			id	path		int					true	"接口id"
-//	@Success		200	{object}	ResponseWithData	"接口列表"
+//	@Param			id	path		int								true	"接口id"
+//	@Success		200	{object}	GetInterfaceInfoByIdResponse	"接口列表"
 //	@Router			/interface/{id} [get]
 func GetInterfaceInfoById(c *gin.Context) {
 	if id := c.Param("id"); id == "" {
@@ -264,33 +264,37 @@ func InvokeInterface(c *gin.Context) {
 		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
-	// 检查接口ID是否小于等于0
-	if params.ID <= 0 {
-		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
-		return
-	}
-
-	// 检查接口是否存在
-	interfaceInfo, err := service.GetInterfaceInfoById(params.ID)
-	if err != nil {
-		fmt.Printf("service.GetInterfaceInfoById err=%v \n", err)
-		c.Error(gerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
-		return
-	}
-
-	// 检查接口是否正常状态
-	if interfaceInfo.Status != int32(enums.InterfaceStatusOnline) {
-		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "接口未上线"))
-		return
-	}
 
 	// 获取用户的ak sk
-	userAccount, exists := c.Get("user_id")
+	userAccount, exists := c.Get("user_account")
 	if !exists {
-		ghandle.HandlerContextError(c, "user_id")
+		ghandle.HandlerContextError(c, "user_account")
 		return
 	}
 	userInfo, err := service.GetUserInfoByUserAccount(userAccount.(string))
+
+	// 检查接口剩余次数是否>0
+	fullUserInterfaceInfo, err := service.GetFullUserInterfaceInfoByUserIdAndInterfaceId(params.ID, userInfo.ID)
+	if err != nil {
+		fmt.Printf("service.GetFullUserInterfaceInfoByUserIdAndInterfaceId err=%v \n", err)
+		c.Error(gerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
+		return
+	}
+	// 检查接口剩余可调用次数
+	if fullUserInterfaceInfo.Leftnum <= 0 {
+		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "接口剩余可调用次数不足"))
+		return
+	}
+	// 检查用户调用该接口是否被禁用
+	if fullUserInterfaceInfo.BanStatus != enums.UserInterfaceStatusOk {
+		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "该接口为禁用状态"))
+		return
+	}
+	// 检查接口是否正常状态
+	if fullUserInterfaceInfo.Status != enums.InterfaceStatusOnline {
+		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "接口未上线"))
+		return
+	}
 
 	// new一个客户端SDK
 	clientsdk := client.NewClient(userInfo.Accesskey, userInfo.Secretkey)

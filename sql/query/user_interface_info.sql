@@ -6,6 +6,11 @@ WHERE `id` = ? AND isDelete = 0 LIMIT 1;
 SELECT * FROM xapi.`user_interface_info`
 WHERE `userId` = ? AND `interfaceInfoId` = ? AND isDelete = 0 LIMIT 1;
 
+-- name: GetFullUserInterfaceInfoByUserIdAndInterfaceId :one
+SELECT a.`leftNum`, a.`totalNum`, a.`status` AS `ban_status`,  b.* FROM xapi.`user_interface_info` AS `a`
+LEFT JOIN xapi.interface_info AS `b` ON a.`interfaceInfoId` = b.id
+WHERE a.`userId` = ? AND a.`interfaceInfoId` = ? AND a.isDelete = 0 and b.`isDelete` = 0 LIMIT 1;
+
 -- name: ListUserInterfaceInfoByUserId :many
 SELECT * FROM xapi.`user_interface_info`
 WHERE `userId` = ? AND isDelete = 0
@@ -34,12 +39,19 @@ insert into xapi.`user_interface_info` (
         ?, ?
     );
 
+-- name: CreateUserInterfaceInfoWithLeftNum :execresult
+insert into xapi.`user_interface_info` (
+    `userId`, `interfaceInfoId`, `leftNum`
+    ) values (
+        ?, ?, ?
+    );
+
 -- name: InvokeUserInterfaceInfo :execresult
 UPDATE xapi.`user_interface_info` set `totalNum`=`totalNum`+1, `leftNum`=`leftNum`-1
 WHERE `userId`=? AND `interfaceInfoId`=? AND `isDelete`=0 AND `leftNum` > 0;
 
 -- name: UpdateUserInterfaceInfoLeftNum :exec
-UPDATE xapi.`user_interface_info` set `leftNum`=?
+UPDATE xapi.`user_interface_info` set `leftNum`=`leftNum`+?
 WHERE `userId`=? AND `interfaceInfoId`=? AND `isDelete`=0;
 
 -- name: UpdateUserInterfaceInfoStatus :exec

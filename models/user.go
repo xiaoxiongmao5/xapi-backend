@@ -26,13 +26,13 @@ type ShowUserJSON struct {
 }
 
 // 注册用户
-type CreateUserParamsJSON struct {
-	UserAccount       string `json:"userAccount"`
-	UserPassword      string `json:"userPassword"`
-	CheckUserPassword string `json:"checkUserPassword"`
+type UserRegisterParams struct {
+	UserAccount       string `json:"useraccount"`
+	UserPassword      string `json:"userpassword"`
+	CheckUserPassword string `json:"checkUserpassword"`
 }
 
-type UserLoginParamsJSON struct {
+type UserLoginParams struct {
 	Useraccount  string `json:"useraccount"`
 	Userpassword string `json:"userpassword"`
 }
