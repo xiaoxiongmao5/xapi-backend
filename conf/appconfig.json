@@ -1,0 +1,12 @@
+{
+    "database": {
+        "host": "localhost",
+        "port": 3306,
+        "dbname":"xapi",
+        "username": "root",
+        "password": "yourpassword"
+      },
+      "server": {
+        "port": 8090
+      }
+}
