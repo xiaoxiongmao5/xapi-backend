@@ -1,4 +1,4 @@
 log/*
 sqlc1.yaml
-client/*
 api.rest
+xapi-backend

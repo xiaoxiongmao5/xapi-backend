@@ -4,7 +4,9 @@
         "port": 3306,
         "dbname":"xapi",
         "username": "root",
-        "password": "yourpassword"
+        "password": "yourpassword",
+        "savePath1":"user:pwd@tcp(mysql)/xapi?charset=utf8&parseTime=true",
+        "savePath":"root:@/xapi?charset=utf8&parseTime=true"
       },
       "server": {
         "port": 8090

@@ -13,6 +13,7 @@ type AppConfiguration struct {
 		Dbname   string `json:"dbname"`
 		Username string `json:"username"`
 		Password string `json:"password"`
+		SavePath string `json:"savePath"`
 	} `json:"database"`
 	Server struct {
 		Port int `json:"port"`

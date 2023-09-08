@@ -51,12 +51,32 @@ func init() {
 		panic(err)
 	}
 
+	// 从环境变量中获取 MySQL 连接信息
+	// dbHost := os.Getenv("DB_HOST")
+	// dbPort := os.Getenv("DB_PORT")
+	// dbUser := os.Getenv("DB_USER")
+	// dbPassword := os.Getenv("DB_PASSWORD")
+	// dbName := os.Getenv("DB_NAME")
+	// if !utils.AreEmptyStrings(dbHost, dbPort, dbUser, dbPassword, dbName) {
+	// 	gconfig.AppConfig.Database.Host = dbHost
+	// 	gconfig.AppConfig.Database.Port, _ = strconv.Atoi(dbPort)
+	// 	gconfig.AppConfig.Database.Dbname = dbName
+	// 	gconfig.AppConfig.Database.Username = dbUser
+	// 	gconfig.AppConfig.Database.Password = dbPassword
+	// } else {
+	// 	fmt.Println("environment dbconfig error!!")
+	// }
+
+	// 构建 MySQL 连接字符串
+	// dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=true", dbUser, dbPassword, dbHost, dbPort, dbName)
+	// dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true", dbUser, dbPassword, dbHost, dbName)
+
 	gstore.TokenMemoryStore = make(map[string]bool)
 	InitInterfaceFuncName()
 	dbcfg := gconfig.AppConfig.Database
-	savePath := fmt.Sprintf("%s:@/%s?charset=utf8&parseTime=true", dbcfg.Username, dbcfg.Dbname)
-	db.MyDB = db.ConnectionPool(savePath)
-	// db.MyDB = db.ConnectionPool("root:@/xapi?charset=utf8&parseTime=true")
+	// savePath := fmt.Sprintf("%s:@/%s?charset=utf8&parseTime=true", dbcfg.Username, dbcfg.Dbname)
+	// dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true", dbcfg.Username, dbcfg.Password, dbcfg.Dbname, dbName)
+	db.MyDB = db.ConnectionPool(dbcfg.SavePath)
 }
 
 func InitInterfaceFuncName() {
