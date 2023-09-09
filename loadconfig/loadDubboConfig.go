@@ -38,7 +38,6 @@ func RegisterServiceToNacos() {
 
 	// 循环检查 Nacos 服务是否可用
 	for attempt <= maxAttempts {
-		// 已废弃: 该接口已不可用
 		url := fmt.Sprintf("http://%s:%d/nacos/health", nacosHost, nacosPort)
 		resp, err := http.Get(url)
 		if err == nil && resp != nil && resp.StatusCode == http.StatusOK {

@@ -87,7 +87,7 @@ func InitInterfaceFuncName() {
 func main() {
 	// 启动配置文件加载协程
 	go loadconfig.LoadNewAppConfig()
-	// go loadconfig.RegisterServiceToNacos()
+	go loadconfig.RegisterServiceToNacos()
 
 	r := gin.New()
 	// 使用自定义的中间件处理全局错误拦截
