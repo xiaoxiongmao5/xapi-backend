@@ -1,15 +1,13 @@
 package main
 
 import (
-	"encoding/json"
-	"flag"
 	"fmt"
-	"os"
 	controller "xj/xapi-backend/controller"
 	"xj/xapi-backend/db"
 	_ "xj/xapi-backend/docs"
 	gconfig "xj/xapi-backend/g_config"
 	gstore "xj/xapi-backend/g_store"
+	"xj/xapi-backend/loadconfig"
 	"xj/xapi-backend/middleware"
 	"xj/xapi-backend/router"
 
@@ -19,36 +17,22 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	dubboConfig "dubbo.apache.org/dubbo-go/v3/config"
 	_ "dubbo.apache.org/dubbo-go/v3/imports"
 )
 
 func init() {
-	// 使用命令行参数来指定配置文件路径
-	dubbogoConfigFile := flag.String("config", "conf/dubbogo.yaml", "Path to Dubbo-go config file")
-	flag.Parse()
-
-	// 设置 DUBBO_GO_CONFIG_PATH 环境变量
-	os.Setenv("DUBBO_GO_CONFIG_PATH", *dubbogoConfigFile)
-
-	// 加载 Dubbo-go 的配置文件，根据环境变量 DUBBO_GO_CONFIG_PATH 中指定的配置文件路径加载配置信息。配置文件通常包括 Dubbo 服务的注册中心地址、协议、端口等信息。
-	if err := dubboConfig.Load(); err != nil {
+	// 加载dubbo配置
+	if err := loadconfig.LoadDubboConfig(); err != nil {
+		fmt.Println("LoadDubboConfig failed:", err)
 		panic(err)
 	}
 
-	// 打开项目配置文件
-	appConfigFile, err := os.Open("conf/appconfig.json")
-	if err != nil {
-		fmt.Println("Error opening config file:", err)
+	// 加载App配置数据
+	if config, err := loadconfig.LoadAppConfig(); err != nil {
+		fmt.Println("LoadAppConfig failed:", err)
 		panic(err)
-	}
-	defer appConfigFile.Close()
-
-	// 解码配置文件内容到结构体
-	decoder := json.NewDecoder(appConfigFile)
-	if err = decoder.Decode(&gconfig.AppConfig); err != nil {
-		fmt.Println("Error decoding config file:", err)
-		panic(err)
+	} else {
+		gconfig.AppConfig = config
 	}
 
 	// 从环境变量中获取 MySQL 连接信息
@@ -69,14 +53,12 @@ func init() {
 
 	// 构建 MySQL 连接字符串
 	// dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=true", dbUser, dbPassword, dbHost, dbPort, dbName)
-	// dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true", dbUser, dbPassword, dbHost, dbName)
 
 	gstore.TokenMemoryStore = make(map[string]bool)
+
 	InitInterfaceFuncName()
-	dbcfg := gconfig.AppConfig.Database
-	// savePath := fmt.Sprintf("%s:@/%s?charset=utf8&parseTime=true", dbcfg.Username, dbcfg.Dbname)
-	// dataSourceName := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true", dbcfg.Username, dbcfg.Password, dbcfg.Dbname, dbName)
-	db.MyDB = db.ConnectionPool(dbcfg.SavePath)
+
+	db.MyDB = db.ConnectionPool(gconfig.AppConfig.Database.SavePath)
 }
 
 func InitInterfaceFuncName() {
@@ -103,7 +85,10 @@ func InitInterfaceFuncName() {
 //	@host	localhost:8080
 
 func main() {
-	// r := setupRouter()
+	// 启动配置文件加载协程
+	go loadconfig.LoadNewAppConfig()
+	// go loadconfig.RegisterServiceToNacos()
+
 	r := gin.New()
 	// 使用自定义的中间件处理全局错误拦截
 	r.Use(middleware.G_ErrorHandlerMiddleware())

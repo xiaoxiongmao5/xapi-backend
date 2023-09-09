@@ -3,3 +3,4 @@ log/
 sqlc1.yaml
 api.rest
 xapi-backend
+scripts/

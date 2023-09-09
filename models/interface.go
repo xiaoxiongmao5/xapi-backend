@@ -8,29 +8,31 @@ import (
 
 // 注册接口参数
 type CreateInterfaceParams struct {
-	Name           string `json:"name"`
-	Description    string `json:"description"`
-	Host           string `json:"host"`
-	Url            string `json:"url"`
-	Requestparams  string `json:"requestparams"`
-	Requestheader  string `json:"requestheader"`
-	Responseheader string `json:"responseheader"`
-	Method         string `json:"method"`
-	Userid         int64  `json:"userid"`
+	Name                 string `json:"name"`
+	Description          string `json:"description"`
+	Host                 string `json:"host"`
+	Url                  string `json:"url"`
+	Requestparams        string `json:"requestparams"`
+	Requestparamsexample string `json:"requestparamsexample"`
+	Requestheader        string `json:"requestheader"`
+	Responseheader       string `json:"responseheader"`
+	Method               string `json:"method"`
+	Userid               int64  `json:"userid"`
 }
 
 // 更新接口信息参数
 type UpdateInterfaceParams struct {
-	Name           string `json:"name"`
-	Description    string `json:"description"`
-	Host           string `json:"host"`
-	Url            string `json:"url"`
-	Requestparams  string `json:"requestparams"`
-	Requestheader  string `json:"requestheader"`
-	Responseheader string `json:"responseheader"`
-	Method         string `json:"method"`
-	Userid         int64  `json:"userid"`
-	ID             int64  `json:"id"`
+	Name                 string `json:"name"`
+	Description          string `json:"description"`
+	Host                 string `json:"host"`
+	Url                  string `json:"url"`
+	Requestparams        string `json:"requestparams"`
+	Requestparamsexample string `json:"requestparamsexample"`
+	Requestheader        string `json:"requestheader"`
+	Responseheader       string `json:"responseheader"`
+	Method               string `json:"method"`
+	Userid               int64  `json:"userid"`
+	ID                   int64  `json:"id"`
 }
 
 // 调用接口参数
@@ -51,12 +53,10 @@ type ValidInterfaceInfo struct {
 	Host string `json:"host"`
 	// 接口地址
 	Url string `json:"url"`
-	/** 请求参数
-	[
-		{"name":"xxx", "type":"string"}
-	]
-	*/
+	// 请求参数
 	Requestparams string `json:"requestparams"`
+	// 请求参数示例	[{"name":"xxx", "type":"string"}]
+	Requestparamsexample string `json:"requestparamsexample"`
 	// 请求头
 	Requestheader string `json:"requestheader"`
 	// 响应头
@@ -75,19 +75,20 @@ type ValidInterfaceInfo struct {
 
 func Convert2ValidXapiInterfaceInfo(i *dbsq.XapiInterfaceInfo) *ValidInterfaceInfo {
 	return &ValidInterfaceInfo{
-		ID:             i.ID,
-		Name:           i.Name,
-		Description:    i.Description.String, // Get the string value from sql.NullString
-		Host:           i.Host,
-		Url:            i.Url,
-		Requestparams:  i.Requestparams.String,
-		Requestheader:  i.Requestheader.String,  // Get the string value from sql.NullString
-		Responseheader: i.Responseheader.String, // Get the string value from sql.NullString
-		Status:         i.Status,
-		Method:         i.Method,
-		Userid:         i.Userid,
-		Createtime:     i.Createtime,
-		Updatetime:     i.Updatetime,
+		ID:                   i.ID,
+		Name:                 i.Name,
+		Description:          i.Description.String, // Get the string value from sql.NullString
+		Host:                 i.Host,
+		Url:                  i.Url,
+		Requestparams:        i.Requestparams.String,
+		Requestparamsexample: i.Requestparamsexample.String,
+		Requestheader:        i.Requestheader.String,  // Get the string value from sql.NullString
+		Responseheader:       i.Responseheader.String, // Get the string value from sql.NullString
+		Status:               i.Status,
+		Method:               i.Method,
+		Userid:               i.Userid,
+		Createtime:           i.Createtime,
+		Updatetime:           i.Updatetime,
 	}
 }
 
@@ -102,6 +103,10 @@ func Convert2CreateInterfaceParams(jsonParams *CreateInterfaceParams) *dbsq.Crea
 		Url:  jsonParams.Url,
 		Requestparams: sql.NullString{
 			String: jsonParams.Requestparams,
+			Valid:  true,
+		},
+		Requestparamsexample: sql.NullString{
+			String: jsonParams.Requestparamsexample,
 			Valid:  true,
 		},
 		Requestheader: sql.NullString{
@@ -128,6 +133,10 @@ func Convert2UpdateInterfaceParams(jsonParams *UpdateInterfaceParams) *dbsq.Upda
 		Url:  jsonParams.Url,
 		Requestparams: sql.NullString{
 			String: jsonParams.Requestparams,
+			Valid:  true,
+		},
+		Requestparamsexample: sql.NullString{
+			String: jsonParams.Requestparamsexample,
 			Valid:  true,
 		},
 		Requestheader: sql.NullString{

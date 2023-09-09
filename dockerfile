@@ -12,7 +12,7 @@ COPY . .
 # 编译应用程序，注意替换 main.go 为您的入口文件
 RUN go build -o xapi-backend main.go
 
-# 使用 Alpine Linux 作为最终的基础镜像
+# 使用 Alpine Linux 作为最终的基础镜像,这是一个轻量级的Linux发行版，通常用于构建小型Docker容器
 FROM alpine:latest
 
 # 安装 GLIBC 和其他运行时库

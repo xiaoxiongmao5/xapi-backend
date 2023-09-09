@@ -24,13 +24,13 @@ where isDelete = 0;
 
 -- name: CreateInterface :execresult
 insert into xapi.`interface_info` (
-    `name`, `description`, `host`, `url`, `requestParams`, `requestHeader`, `responseHeader`, `status`, `method`, `userId`
+    `name`, `description`, `host`, `url`, `requestParams`, `requestHeader`, `responseHeader`, `requestParamsExample`, `status`, `method`, `userId`
     ) values (
-        ?, ?, ?, ?, ?, ?, ?, 0, ?, ?
+        ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?
     );
 
 -- name: UpdateInterface :exec
-UPDATE xapi.`interface_info` set `name`=?, `description`=?, `host`=?, `url`=?, `requestParams`=?, `requestHeader`=?, `responseHeader`=?, `method`=?, `userId`=?
+UPDATE xapi.`interface_info` set `name`=?, `description`=?, `host`=?, `url`=?, `requestParams`=?, `requestParamsExample`=?, `requestHeader`=?, `responseHeader`=?, `method`=?, `userId`=?
 WHERE id = ?;
 
 -- name: DeleteInterface :exec

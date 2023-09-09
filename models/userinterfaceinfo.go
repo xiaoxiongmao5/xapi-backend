@@ -28,8 +28,10 @@ type ValidUserInterfaceInfo struct {
 	Host string `json:"host"`
 	// 接口地址
 	Url string `json:"url"`
-	// 请求参数 [{"name":"xxx", "type":"string"}]
+	// 请求参数
 	Requestparams string `json:"requestparams"`
+	// 请求参数示例	[{"name":"xxx", "type":"string"}]
+	Requestparamsexample string `json:"requestparamsexample"`
 	// 请求头
 	Requestheader string `json:"requestheader"`
 	// 响应头
@@ -48,41 +50,43 @@ type ValidUserInterfaceInfo struct {
 
 func Convert2ValidUserInterfaceInfo(i *ValidInterfaceInfo) *ValidUserInterfaceInfo {
 	return &ValidUserInterfaceInfo{
-		ID:             i.ID,
-		Name:           i.Name,
-		Description:    i.Description,
-		Totalnum:       0,
-		Leftnum:        0,
-		Host:           i.Host,
-		Url:            i.Url,
-		Requestparams:  i.Requestparams,
-		Requestheader:  i.Requestheader,
-		Responseheader: i.Responseheader,
-		Status:         i.Status,
-		Method:         i.Method,
-		Userid:         i.Userid,
-		Createtime:     i.Createtime,
-		Updatetime:     i.Updatetime,
+		ID:                   i.ID,
+		Name:                 i.Name,
+		Description:          i.Description,
+		Totalnum:             0,
+		Leftnum:              0,
+		Host:                 i.Host,
+		Url:                  i.Url,
+		Requestparams:        i.Requestparams,
+		Requestparamsexample: i.Requestparamsexample,
+		Requestheader:        i.Requestheader,
+		Responseheader:       i.Responseheader,
+		Status:               i.Status,
+		Method:               i.Method,
+		Userid:               i.Userid,
+		Createtime:           i.Createtime,
+		Updatetime:           i.Updatetime,
 	}
 }
 
 func Convert2ValidUserInterfaceInfoQueryOfByLeftjoin(i *dbsq.GetFullUserInterfaceInfoByUserIdAndInterfaceIdRow) *ValidUserInterfaceInfo {
 	return &ValidUserInterfaceInfo{
-		ID:             i.ID.Int64,
-		Name:           i.Name.String,
-		Description:    i.Description.String,
-		Totalnum:       i.Totalnum,
-		Leftnum:        i.Leftnum,
-		BanStatus:      i.BanStatus,
-		Host:           i.Host.String,
-		Url:            i.Url.String,
-		Requestparams:  i.Requestparams.String,
-		Requestheader:  i.Requestheader.String,
-		Responseheader: i.Responseheader.String,
-		Status:         i.Status.Int32,
-		Method:         i.Method.String,
-		Userid:         i.Userid.Int64,
-		Createtime:     i.Createtime.Time,
-		Updatetime:     i.Updatetime.Time,
+		ID:                   i.ID.Int64,
+		Name:                 i.Name.String,
+		Description:          i.Description.String,
+		Totalnum:             i.Totalnum,
+		Leftnum:              i.Leftnum,
+		BanStatus:            i.BanStatus,
+		Host:                 i.Host.String,
+		Url:                  i.Url.String,
+		Requestparams:        i.Requestparams.String,
+		Requestparamsexample: i.Requestparamsexample.String,
+		Requestheader:        i.Requestheader.String,
+		Responseheader:       i.Responseheader.String,
+		Status:               i.Status.Int32,
+		Method:               i.Method.String,
+		Userid:               i.Userid.Int64,
+		Createtime:           i.Createtime.Time,
+		Updatetime:           i.Updatetime.Time,
 	}
 }

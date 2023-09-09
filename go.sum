@@ -892,8 +892,8 @@ github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijb
 github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2 h1:eY9dn8+vbi4tKz5Qo6v2eYzo7kUS51QINcR5jNpbZS8=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
-github.com/xiaoxiongmao5/xapi-clientsdk v1.0.4 h1:Bgxmz4dq1wRWgWM5zaw1Sgqw1FG4xeS44ngIma+YtDc=
-github.com/xiaoxiongmao5/xapi-clientsdk v1.0.4/go.mod h1:I1GV1NHQSpU9kUhxkm8JsJazlWKJcx0M6dGp/lxArLA=
+github.com/xiaoxiongmao5/xapi-clientsdk v1.0.5 h1:3Y7Y+qcWWKo0BuO09pVh2lJrldmHB6I5oW7TL3uc+kI=
+github.com/xiaoxiongmao5/xapi-clientsdk v1.0.5/go.mod h1:I1GV1NHQSpU9kUhxkm8JsJazlWKJcx0M6dGp/lxArLA=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

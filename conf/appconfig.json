@@ -1,14 +1,22 @@
 {
-    "database": {
-        "host": "localhost",
-        "port": 3306,
-        "dbname":"xapi",
-        "username": "root",
-        "password": "yourpassword",
-        "savePath1":"user:pwd@tcp(mysql)/xapi?charset=utf8&parseTime=true",
-        "savePath":"root:@/xapi?charset=utf8&parseTime=true"
-      },
-      "server": {
-        "port": 8090
-      }
+  "database": {
+    "host": "localhost",
+    "port": 3306,
+    "dbname": "xapi",
+    "username": "root",
+    "password": "yourpassword",
+    "savePath1": "user:pwd@tcp(mysql)/xapi?charset=utf8&parseTime=true",
+    "savePath": "root:@/xapi?charset=utf8&parseTime=true"
+  },
+  "server": {
+    "port": 8091
+  },
+  "ipWhiteList": [
+    "127.0.0.1",
+    "192.168.2.104"
+  ],
+  "nacos": {
+    "host": "nacos",
+    "port": 8848
+  }
 }
