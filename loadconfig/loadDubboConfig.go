@@ -33,7 +33,7 @@ func RegisterServiceToNacos() {
 	nacosHost := gconfig.AppConfig.Nacos.Host
 	nacosPort := gconfig.AppConfig.Nacos.Port
 	// 最大尝试次数和当前尝试次数
-	maxAttempts := 10
+	maxAttempts := 30
 	attempt := 1
 
 	// 循环检查 Nacos 服务是否可用
@@ -47,7 +47,7 @@ func RegisterServiceToNacos() {
 		} else {
 			fmt.Printf("Attempt %d: Nacos is not ready yet, waiting...\n", attempt)
 			attempt++
-			time.Sleep(3 * time.Second) // 等待3秒后重试
+			time.Sleep(5 * time.Second)
 		}
 	}
 
