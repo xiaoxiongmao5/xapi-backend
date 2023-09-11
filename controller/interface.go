@@ -277,7 +277,7 @@ func InvokeInterface(c *gin.Context) {
 	fullUserInterfaceInfo, err := service.GetFullUserInterfaceInfoByUserIdAndInterfaceId(params.ID, userInfo.ID)
 	if err != nil {
 		fmt.Printf("service.GetFullUserInterfaceInfoByUserIdAndInterfaceId err=%v \n", err)
-		c.Error(gerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
+		c.Error(gerror.NewAbortErr(int(enums.InterfaceNotExist), "接口剩余可调用次数不足"))
 		return
 	}
 	// 检查接口剩余可调用次数
