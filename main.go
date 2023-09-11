@@ -101,6 +101,7 @@ func main() {
 	router.UserRouter(r)
 	router.InterfaceRouter(r)
 	router.UserInterfaceInfoRouter(r)
+	router.AnalysisRouter(r)
 
 	port := fmt.Sprintf(":%d", gconfig.AppConfig.Server.Port)
 	r.Run(port)

@@ -48,6 +48,12 @@ type ValidUserInterfaceInfo struct {
 	Updatetime time.Time `json:"updatetime"`
 }
 
+type ValidTopNOfInterfaceInvokeCountRow struct {
+	Interfaceinfoid int64  `json:"interfaceinfoid"`
+	Invokecount     int64  `json:"invokecount"`
+	Name            string `json:"name"`
+}
+
 func Convert2ValidUserInterfaceInfo(i *ValidInterfaceInfo) *ValidUserInterfaceInfo {
 	return &ValidUserInterfaceInfo{
 		ID:                   i.ID,
@@ -89,4 +95,18 @@ func Convert2ValidUserInterfaceInfoQueryOfByLeftjoin(i *dbsq.GetFullUserInterfac
 		Createtime:           i.Createtime.Time,
 		Updatetime:           i.Updatetime.Time,
 	}
+}
+
+func Convert2ValidTopNOfInterfaceInvokeCountRow(i *dbsq.ListTopNOfInterfaceInvokeCountRow) *ValidTopNOfInterfaceInvokeCountRow {
+	validRow := &ValidTopNOfInterfaceInvokeCountRow{
+		Interfaceinfoid: i.Interfaceinfoid,
+		Name:            i.Name.String,
+	}
+	// 将 Invokecount 转换为 int64 类型
+	if count, ok := i.Invokecount.(int64); ok {
+		validRow.Invokecount = count
+	} else {
+		validRow.Invokecount = 0 // 如果转换失败，可以使用默认值
+	}
+	return validRow
 }

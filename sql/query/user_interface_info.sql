@@ -61,3 +61,13 @@ WHERE `userId`=? AND `interfaceInfoId`=? AND `isDelete`=0;
 -- name: DeleteUserInterfaceInfo :exec
 UPDATE xapi.`user_interface_info` set `isDelete` = 1 
 WHERE `userId`=? AND `interfaceInfoId`=?;
+
+-- name: ListTopNOfInterfaceInvokeCount :many
+select a.*, b.name from (
+    SELECT `interfaceInfoId`, SUM(`totalNum`) as `invokeCount` FROM xapi.user_interface_info
+    GROUP BY `interfaceInfoId`
+    ORDER BY `invokeCount` DESC
+    LIMIT ?
+) as `a`
+LEFT JOIN xapi.interface_info as `b`
+on a.interfaceInfoId = b.id

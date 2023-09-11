@@ -73,3 +73,19 @@ func UpdateInvokeLeftCount(interfaceId, userId int64, leftNum int32) (sql.Result
 		Leftnum:         leftNum,
 	})
 }
+
+/** 获得接口调用次数的统计信息，Top N
+ */
+func ListTopNOfInterfaceInvokeCount(limit int32) ([]*dbsq.ListTopNOfInterfaceInvokeCountRow, error) {
+	q := dbsq.New(db.MyDB)
+	ctx := context.Background()
+	return q.ListTopNOfInterfaceInvokeCount(ctx, limit)
+}
+
+func ConvertSliceToValidTopNOfInterfaceInvokeCountRow(slice []*dbsq.ListTopNOfInterfaceInvokeCountRow) []*models.ValidTopNOfInterfaceInvokeCountRow {
+	result := make([]*models.ValidTopNOfInterfaceInvokeCountRow, len(slice))
+	for i, item := range slice {
+		result[i] = models.Convert2ValidTopNOfInterfaceInvokeCountRow(item)
+	}
+	return result
+}
