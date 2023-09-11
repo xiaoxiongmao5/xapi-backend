@@ -21,11 +21,11 @@ import (
 )
 
 func init() {
-	// 加载dubbo配置
-	if err := loadconfig.LoadDubboConfig(); err != nil {
-		fmt.Println("LoadDubboConfig failed:", err)
-		panic(err)
-	}
+	// // 加载dubbo配置
+	// if err := loadconfig.LoadDubboConfig(); err != nil {
+	// 	fmt.Println("LoadDubboConfig failed:", err)
+	// 	panic(err)
+	// }
 
 	// 加载App配置数据
 	if config, err := loadconfig.LoadAppConfig(); err != nil {

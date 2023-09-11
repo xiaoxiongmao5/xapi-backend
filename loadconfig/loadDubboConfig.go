@@ -53,6 +53,7 @@ func RegisterServiceToNacos() {
 
 	if attempt > maxAttempts {
 		fmt.Println("Max attempts reached. Nacos may not be available.")
+		LoadDubboConfig()
 		// 在这里可以添加适当的错误处理或退出逻辑
 	} else {
 		// Nacos 可用后执行启动后端服务的操作

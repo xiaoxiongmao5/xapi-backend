@@ -9,7 +9,7 @@
     "savePath": "root:@/xapi?charset=utf8&parseTime=true"
   },
   "server": {
-    "port": 8091
+    "port": 8090
   },
   "ipWhiteList": [
     "127.0.0.1",
