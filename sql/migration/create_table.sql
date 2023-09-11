@@ -30,7 +30,7 @@ create table if not exists xapi.`interface_info`
     `id` bigint not null auto_increment comment '主键' primary key,
     `name` varchar(256) not null comment '名称',
     `description` varchar(256) null comment '描述',
-    `host` varchar(32) not null comment '域名',
+    `host` varchar(256) not null comment '域名',
     `url` varchar(512) not null comment '接口地址',
     `requestParams` text null comment '请求参数',
     `requestHeader` text null comment '请求头',
