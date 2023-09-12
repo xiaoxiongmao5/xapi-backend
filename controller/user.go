@@ -1,13 +1,12 @@
 package controller
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 
 	"xj/xapi-backend/enums"
 	gerror "xj/xapi-backend/g_error"
 	ghandle "xj/xapi-backend/g_handle"
+	glog "xj/xapi-backend/g_log"
 	gstore "xj/xapi-backend/g_store"
 	"xj/xapi-backend/models"
 	service "xj/xapi-backend/service"
@@ -28,14 +27,14 @@ import (
 func UserRegister(c *gin.Context) {
 	var params *models.UserRegisterParams
 	if err := c.ShouldBindJSON(&params); err != nil {
-		fmt.Printf("UserRegisterParams err=%v \n", err.Error())
+		glog.Log.Errorf("UserRegisterParams err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
 
 	// 注册用户
 	if _, err := service.CreateUser(params); err != nil {
-		fmt.Printf("service.CreateUser err=%v \n", err)
+		glog.Log.Errorf("service.CreateUser err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.CreateUserFailed), err.Error()))
 		return
 	}
@@ -58,7 +57,7 @@ func GetUserInfoByUserAccount(c *gin.Context) {
 
 	userInfo, err := service.GetUserInfoByUserAccount(useraccount.(string))
 	if err != nil {
-		fmt.Printf("q.GetUserInfoByUserAccount err=%v \n", err)
+		glog.Log.Errorf("q.GetUserInfoByUserAccount err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.UserNotExist), "用户不存在"))
 		return
 	}
@@ -90,15 +89,15 @@ func UserLogin(c *gin.Context) {
 	// 用户是否存在（获取用户信息）
 	userInfo, err := service.GetUserInfoByUserAccount(useraccount)
 	if err != nil {
-		fmt.Printf("q.GetUserInfoByUserAccount err=%v \n", err)
+		glog.Log.Errorf("q.GetUserInfoByUserAccount err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.UserNotExist), "账号不存在"))
 		return
 	}
-	fmt.Printf("拿到用户信息了%v \n", userInfo)
+	glog.Log.Infof("拿到用户信息了%v", userInfo)
 
 	// 验证密码是否正常
 	if err := utils.CheckHashPasswordByBcrypt(userInfo.Userpassword, userpassword); err != nil {
-		fmt.Printf("CheckHashPasswordByBcrypt err=%v \n", err)
+		glog.Log.Errorf("CheckHashPasswordByBcrypt err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.UserPasswordError), "账号不存在或者密码验证错误"))
 		return
 	}
@@ -106,7 +105,7 @@ func UserLogin(c *gin.Context) {
 	// 生成token
 	token, err := utils.GenerateToken(useraccount, userInfo.Userrole)
 	if err != nil {
-		fmt.Printf("utils.GenerateToken err=%v \n", err)
+		glog.Log.Errorf("utils.GenerateToken err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.GenerateTokenFailed), err.Error()))
 		return
 	}

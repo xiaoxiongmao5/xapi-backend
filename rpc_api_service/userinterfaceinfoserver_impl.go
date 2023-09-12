@@ -2,11 +2,10 @@ package rpcapiservice
 
 import (
 	"context"
+	glog "xj/xapi-backend/g_log"
 	"xj/xapi-backend/models"
 	"xj/xapi-backend/rpc_api"
 	"xj/xapi-backend/service"
-
-	"dubbo.apache.org/dubbo-go/v3/common/logger"
 )
 
 type UserIntefaceInfoServerImpl struct {
@@ -14,7 +13,7 @@ type UserIntefaceInfoServerImpl struct {
 }
 
 func (s *UserIntefaceInfoServerImpl) InvokeCount(ctx context.Context, in *rpc_api.InvokeCountReq) (*rpc_api.InvokeCountResp, error) {
-	logger.Infof("Dubbo-go InvokeCount InterfaceId = %d UserId = %d\n", in.InterfaceId, in.UserId)
+	glog.Log.Infof("Dubbo-go InvokeCount InterfaceId = %d UserId = %d", in.InterfaceId, in.UserId)
 	data, err := service.InvokeCount(in.InterfaceId, in.UserId)
 	if err != nil {
 		return &rpc_api.InvokeCountResp{Result: false}, err
@@ -28,7 +27,7 @@ func (s *UserIntefaceInfoServerImpl) InvokeCount(ctx context.Context, in *rpc_ap
 }
 
 func (s *UserIntefaceInfoServerImpl) GetFullUserInterfaceInfo(ctx context.Context, in *rpc_api.GetFullUserInterfaceInfoReq) (*rpc_api.GetFullUserInterfaceInfoResp, error) {
-	logger.Infof("Dubbo-go GetFullUserInterfaceInfoByUserIdAndInterfaceId InterfaceId = %d UserId = %d\n", in.InterfaceId, in.UserId)
+	glog.Log.Infof("Dubbo-go GetFullUserInterfaceInfoByUserIdAndInterfaceId InterfaceId = %d UserId = %d", in.InterfaceId, in.UserId)
 	data, err := service.GetFullUserInterfaceInfoByUserIdAndInterfaceId(in.InterfaceId, in.UserId)
 	if err != nil {
 		return nil, err

@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"xj/xapi-backend/db"
 	"xj/xapi-backend/dbsq"
 	gconfig "xj/xapi-backend/g_config"
+	glog "xj/xapi-backend/g_log"
 	gstore "xj/xapi-backend/g_store"
 	"xj/xapi-backend/models"
 	"xj/xapi-backend/utils"
@@ -62,7 +62,7 @@ func CreateUser(param *models.UserRegisterParams) (sql.Result, error) {
 	// 将密码进行哈希
 	hashPassword, err := utils.HashPasswordByBcrypt(userPassword)
 	if err != nil {
-		fmt.Printf("utils.HashByBcrypt err=%v \n", err)
+		glog.Log.Errorf("utils.HashByBcrypt err=%v", err.Error())
 		return nil, err
 	}
 	// 分配accessKey,secretKey

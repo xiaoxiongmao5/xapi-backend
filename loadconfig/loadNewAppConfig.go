@@ -2,12 +2,31 @@ package loadconfig
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"reflect"
 	"time"
 	gconfig "xj/xapi-backend/g_config"
+	glog "xj/xapi-backend/g_log"
 )
+
+// 从环境变量中获取 MySQL 连接信息
+// dbHost := os.Getenv("DB_HOST")
+// dbPort := os.Getenv("DB_PORT")
+// dbUser := os.Getenv("DB_USER")
+// dbPassword := os.Getenv("DB_PASSWORD")
+// dbName := os.Getenv("DB_NAME")
+// if !utils.AreEmptyStrings(dbHost, dbPort, dbUser, dbPassword, dbName) {
+// 	gconfig.AppConfig.Database.Host = dbHost
+// 	gconfig.AppConfig.Database.Port, _ = strconv.Atoi(dbPort)
+// 	gconfig.AppConfig.Database.Dbname = dbName
+// 	gconfig.AppConfig.Database.Username = dbUser
+// 	gconfig.AppConfig.Database.Password = dbPassword
+// } else {
+// 	glog.Log.Info("environment dbconfig error!!")
+// }
+
+// 构建 MySQL 连接字符串
+// dataSourceName := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=true", dbUser, dbPassword, dbHost, dbPort, dbName)
 
 // 加载App配置数据
 func LoadAppConfig() (*gconfig.AppConfiguration, error) {
@@ -41,7 +60,7 @@ func LoadNewAppConfig() {
 	for range ticker.C {
 		fileInfo, err := os.Stat(filePath)
 		if err != nil {
-			log.Printf("Error reading config file: %v\n", err)
+			glog.Log.Errorf("Error reading config file: %v", err)
 			continue
 		}
 
@@ -50,7 +69,7 @@ func LoadNewAppConfig() {
 
 			newConfig, err := LoadAppConfig()
 			if err != nil {
-				log.Printf("Error loading config: %v\n", err)
+				glog.Log.Errorf("Error loading config: %v", err)
 				// todo 更新加载App配置数据失败，需报警
 				continue
 			}
@@ -60,7 +79,7 @@ func LoadNewAppConfig() {
 			if !reflect.DeepEqual(lastConfig, newConfig) {
 				lastConfig = newConfig
 				// 在这里使用最新的配置数据进行处理
-				log.Printf("Loaded new config: %+v\n", newConfig)
+				glog.Log.Errorf("Loaded new config: %+v", newConfig)
 				gconfig.AppConfig = newConfig
 			}
 			gconfig.AppConfigMutex.Unlock()

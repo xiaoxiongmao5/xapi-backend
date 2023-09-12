@@ -7,11 +7,13 @@ import (
 	"xj/xapi-backend/enums"
 	gerror "xj/xapi-backend/g_error"
 	ghandle "xj/xapi-backend/g_handle"
+	glog "xj/xapi-backend/g_log"
 	gstore "xj/xapi-backend/g_store"
 	"xj/xapi-backend/models"
 	"xj/xapi-backend/service"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"github.com/xiaoxiongmao5/xapi-clientsdk/client"
 )
 
@@ -26,13 +28,13 @@ import (
 func CreateInterface(c *gin.Context) {
 	var params *models.CreateInterfaceParams
 	if err := c.ShouldBindJSON(&params); err != nil {
-		fmt.Printf("CreateInterfaceParams err=%v \n", err.Error())
+		glog.Log.Errorf("CreateInterfaceParams err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
 	// 注册接口
 	if _, err := service.CreateInterface(params); err != nil {
-		fmt.Printf("service.CreateUser err=%v \n", err)
+		glog.Log.Errorf("service.CreateUser err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.CreateInterfaceFailed), "接口注册失败"))
 		return
 	}
@@ -51,20 +53,20 @@ func CreateInterface(c *gin.Context) {
 func UpdateInterface(c *gin.Context) {
 	var params *models.UpdateInterfaceParams
 	if err := c.ShouldBindJSON(&params); err != nil {
-		fmt.Printf("UpdateInterfaceParams err=%v \n", err.Error())
+		glog.Log.Errorf("UpdateInterfaceParams err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
 	// 1. 检查接口是否存在
 	if _, err := service.GetInterfaceInfoById(params.ID); err != nil {
-		fmt.Printf("service.GetInterfaceInfoById err=%v \n", err)
+		glog.Log.Errorf("service.GetInterfaceInfoById err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
 		return
 	}
 
 	// 2. 更新接口信息
 	if err := service.UpdateInterface(params); err != nil {
-		fmt.Printf("service.CreateUser err=%v \n", err)
+		glog.Log.Errorf("service.CreateUser err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.UpdateInterfaceFailed), "接口修改失败"))
 		return
 	}
@@ -142,13 +144,13 @@ func GetInterfaceInfoById(c *gin.Context) {
 	}
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		fmt.Printf("param id format err=%v \n", err.Error())
+		glog.Log.Errorf("param id format err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
 	data, err := service.GetInterfaceInfoById(int64(id))
 	if err != nil {
-		fmt.Printf("service.GetInterfaceInfoById err=%v \n", err)
+		glog.Log.Errorf("service.GetInterfaceInfoById err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.InterfaceNotExist), "接口信息获取失败"))
 		return
 	}
@@ -167,13 +169,13 @@ func GetInterfaceInfoById(c *gin.Context) {
 func DeleteInterface(c *gin.Context) {
 	var params *models.IdRequest
 	if err := c.ShouldBindJSON(&params); err != nil {
-		fmt.Printf("param IdRequest err=%v \n", err.Error())
+		glog.Log.Errorf("param IdRequest err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
 	// 1. 检查接口是否存在
 	if _, err := service.GetInterfaceInfoById(params.ID); err != nil {
-		fmt.Printf("service.GetInterfaceInfoById err=%v \n", err)
+		glog.Log.Errorf("service.GetInterfaceInfoById err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
 		return
 	}
@@ -197,13 +199,13 @@ func DeleteInterface(c *gin.Context) {
 func OnlineInterface(c *gin.Context) {
 	var params *models.IdRequest
 	if err := c.ShouldBindJSON(&params); err != nil {
-		fmt.Printf("param IdRequest err=%v \n", err.Error())
+		glog.Log.Errorf("param IdRequest err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
 	// 1. 检查接口是否存在
 	if _, err := service.GetInterfaceInfoById(params.ID); err != nil {
-		fmt.Printf("service.GetInterfaceInfoById err=%v \n", err)
+		glog.Log.Errorf("service.GetInterfaceInfoById err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
 		return
 	}
@@ -211,7 +213,7 @@ func OnlineInterface(c *gin.Context) {
 
 	// 3. 修改接口状态statuc=1
 	if err := service.OnlineInterfaceStatus(params.ID); err != nil {
-		fmt.Printf("service.OnlineInterfaceStatus err=%v \n", err)
+		glog.Log.Errorf("service.OnlineInterfaceStatus err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.OnlineInterfaceFailed), "接口发布失败"))
 		return
 	}
@@ -230,20 +232,20 @@ func OnlineInterface(c *gin.Context) {
 func OfflineInterface(c *gin.Context) {
 	var params *models.IdRequest
 	if err := c.ShouldBindJSON(&params); err != nil {
-		fmt.Printf("param IdRequest err=%v \n", err.Error())
+		glog.Log.Errorf("param IdRequest err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
 	// 1. 检查接口是否存在
 	if _, err := service.GetInterfaceInfoById(params.ID); err != nil {
-		fmt.Printf("service.GetInterfaceInfoById err=%v \n", err)
+		glog.Log.Errorf("service.GetInterfaceInfoById err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.InterfaceNotExist), "接口不存在"))
 		return
 	}
 
 	// 2. 修改接口状态statuc=0
 	if err := service.OfflineInterfaceStatus(params.ID); err != nil {
-		fmt.Printf("service.OfflineInterfaceStatus err=%v \n", err)
+		glog.Log.Errorf("service.OfflineInterfaceStatus err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.OfflineInterfaceFailed), "接口下线失败"))
 		return
 	}
@@ -260,9 +262,13 @@ func OfflineInterface(c *gin.Context) {
 func InvokeInterface(c *gin.Context) {
 	var params *models.InvokeInterfaceParams
 	if err := c.ShouldBindJSON(&params); err != nil {
-		fmt.Printf("param InvokeInterfaceParams err=%v \n", err.Error())
+		glog.Log.Errorf("param InvokeInterfaceParams err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
+	}
+	// 默认传"{}"
+	if params.Requestparams == "" {
+		params.Requestparams = "{}"
 	}
 
 	// 获取用户的ak sk
@@ -276,7 +282,7 @@ func InvokeInterface(c *gin.Context) {
 	// 检查接口剩余次数是否>0
 	fullUserInterfaceInfo, err := service.GetFullUserInterfaceInfoByUserIdAndInterfaceId(params.ID, userInfo.ID)
 	if err != nil {
-		fmt.Printf("service.GetFullUserInterfaceInfoByUserIdAndInterfaceId err=%v \n", err)
+		glog.Log.Errorf("service.GetFullUserInterfaceInfoByUserIdAndInterfaceId err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.InterfaceNotExist), "接口剩余可调用次数不足"))
 		return
 	}
@@ -323,38 +329,49 @@ func InvokeInterface(c *gin.Context) {
 		c.Error(gerror.NewAbortErr(int(enums.InvokeInterfaceFailed), "调用接口返回值格式校验失败"))
 		return
 	}
+	flag := true
 	// 提取 statusCode
 	statusCode, ok := result[0].Interface().(int)
 	if !ok {
-		c.Error(gerror.NewAbortErr(int(enums.InvokeInterfaceFailed), "调用接口返回无效的statusCode"))
-		return
+		flag = false
 	}
-	fmt.Printf("statusCode=%v \ttype=%T\n", statusCode, statusCode)
-
 	// 提取 contentType
 	contentType, ok := result[1].Interface().(string)
 	if !ok {
-		c.Error(gerror.NewAbortErr(int(enums.InvokeInterfaceFailed), "调用接口返回无效的contentType"))
-		return
+		flag = false
 	}
-	fmt.Printf("contentType=%v \ttype=%T\n", contentType, contentType)
-
 	// 提取 bodyBytes
 	bodyBytes, ok := result[2].Interface().([]byte)
 	if !ok {
-		c.Error(gerror.NewAbortErr(int(enums.InvokeInterfaceFailed), "调用接口返回无效的bodyBytes"))
-		return
+		flag = false
 	}
-	fmt.Printf("bodyBytes=%v \ttype=%T\n", string(bodyBytes), bodyBytes)
-
 	// 提取 error
 	bodyError, ok := result[3].Interface().(error)
 	if ok {
-		fmt.Printf("bodyError=%v  \ttype=%T\n", bodyError, bodyError)
-		// todo 这里可以降级处理
-		c.Error(gerror.NewAbortErr(int(enums.InvokeInterfaceFailed), "调用接口返回错误: "+bodyError.Error()))
+		flag = false
+	}
+
+	glog.Log.WithFields(logrus.Fields{
+		"res[0]statusCode":  fmt.Sprintf("%v", statusCode),
+		"res[0]type":        fmt.Sprintf("%T", statusCode),
+		"res[1]contentType": fmt.Sprintf("%v", contentType),
+		"res[1]type":        fmt.Sprintf("%T", contentType),
+		"res[2]bodyBytes":   fmt.Sprintf("%v", string(bodyBytes)),
+		"res[2]type":        fmt.Sprintf("%T", bodyBytes),
+		"res[3]bodyError":   fmt.Sprintf("%v", bodyError),
+		"res[3]type":        fmt.Sprintf("%T", bodyError),
+	}).Info("解析调用接口返回数据")
+
+	if !flag {
+		if bodyError != nil {
+			// todo 这里可以降级处理
+			c.Error(gerror.NewAbortErr(int(enums.InvokeInterfaceFailed), "调用接口返回错误: "+bodyError.Error()))
+		} else {
+			c.Error(gerror.NewAbortErr(int(enums.InvokeInterfaceFailed), "调用接口返回数据格式错误, 解析失败"))
+		}
 		return
 	}
+
 	// 使用提取的值调用 c.Data 将响应体内容直接返回给前端
 	c.Data(statusCode, contentType, bodyBytes)
 	return

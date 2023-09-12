@@ -1,10 +1,10 @@
 package controller
 
 import (
-	"fmt"
 	"xj/xapi-backend/enums"
 	gerror "xj/xapi-backend/g_error"
 	ghandle "xj/xapi-backend/g_handle"
+	glog "xj/xapi-backend/g_log"
 	"xj/xapi-backend/models"
 	"xj/xapi-backend/service"
 	"xj/xapi-backend/utils"
@@ -34,13 +34,13 @@ func GetUserInterfaceInfoById(c *gin.Context) {
 	}
 	interfaceId, err := utils.String2Int64(id)
 	if err != nil {
-		fmt.Printf("param id format err=%v \n", err.Error())
+		glog.Log.Errorf("param id format err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}
 	interfaceInfo, err := service.GetInterfaceInfoById(interfaceId)
 	if err != nil {
-		fmt.Printf("service.GetInterfaceInfoById err=%v \n", err)
+		glog.Log.Errorf("service.GetInterfaceInfoById err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.InterfaceNotExist), "接口信息获取失败"))
 		return
 	}
@@ -77,7 +77,7 @@ func GetUserInterfaceInfoById(c *gin.Context) {
 func UpdateInvokeLeftCount(c *gin.Context) {
 	var params *models.UpdateInvokeLeftCountParams
 	if err := c.ShouldBindJSON(&params); err != nil {
-		fmt.Printf("UpdateInvokeLeftCountParams err=%v \n", err.Error())
+		glog.Log.Errorf("UpdateInvokeLeftCountParams err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
 		return
 	}

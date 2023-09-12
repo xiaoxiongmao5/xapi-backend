@@ -1,11 +1,11 @@
 package controller
 
 import (
-	"fmt"
 	"strconv"
 	"xj/xapi-backend/enums"
 	gerror "xj/xapi-backend/g_error"
 	ghandle "xj/xapi-backend/g_handle"
+	glog "xj/xapi-backend/g_log"
 	"xj/xapi-backend/models"
 	"xj/xapi-backend/service"
 
@@ -38,7 +38,7 @@ func ListTopNOfInterfaceInvokeCount(c *gin.Context) {
 	}
 	data, err := service.ListTopNOfInterfaceInvokeCount(int32(limit))
 	if err != nil {
-		fmt.Printf("service.ListTopNOfInterfaceInvokeCount err=%v \n", err)
+		glog.Log.Errorf("service.ListTopNOfInterfaceInvokeCount err=%v", err.Error())
 		c.Error(gerror.NewAbortErr(int(enums.InterfaceNotExist), "接口调用次数TopN的信息列表获取失败"))
 		return
 	}

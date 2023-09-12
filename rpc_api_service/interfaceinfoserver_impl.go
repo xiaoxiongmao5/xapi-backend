@@ -2,11 +2,10 @@ package rpcapiservice
 
 import (
 	"context"
+	glog "xj/xapi-backend/g_log"
 	"xj/xapi-backend/models"
 	"xj/xapi-backend/rpc_api"
 	"xj/xapi-backend/service"
-
-	"dubbo.apache.org/dubbo-go/v3/common/logger"
 )
 
 type IntefaceInfoServerImpl struct {
@@ -14,7 +13,7 @@ type IntefaceInfoServerImpl struct {
 }
 
 func (s *IntefaceInfoServerImpl) GetInterfaceInfoById(ctx context.Context, in *rpc_api.GetInterfaceInfoByIdReq) (*rpc_api.GetInterfaceInfoByIdResp, error) {
-	logger.Infof("Dubbo-go GetInterfaceInfoById: InterfaceId = %d\n", in.InterfaceId)
+	glog.Log.Infof("Dubbo-go GetInterfaceInfoById: InterfaceId = %d", in.InterfaceId)
 	data, err := service.GetInterfaceInfoById(in.InterfaceId)
 	if err != nil {
 		return nil, err

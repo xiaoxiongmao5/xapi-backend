@@ -1,7 +1,6 @@
 package ghandle
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -10,7 +9,7 @@ import (
 // 状态未授权 401
 func HandlerUnauthorized(c *gin.Context) {
 	//  "Error 1044 (42000): Access denied for user 'xapiuser'@'%' to database 'xapi'"
-	fmt.Printf("Error : Access denied for user '%s'@'%s' to 业务 '%s'", "用户名", "用户补充", "业务名")
+	// glog.Log.Infof("Error : Access denied for user '%s'@'%s' to 业务 '%s'", "用户名", "用户补充", "业务名")
 	c.JSON(http.StatusOK, gin.H{"result": http.StatusUnauthorized, "msg": "状态未授权"})
 	c.Abort()
 }

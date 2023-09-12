@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 	gconfig "xj/xapi-backend/g_config"
+	glog "xj/xapi-backend/g_log"
 	_ "xj/xapi-backend/rpc_api_service"
 
 	"dubbo.apache.org/dubbo-go/v3/config"
@@ -41,18 +42,18 @@ func RegisterServiceToNacos() {
 		url := fmt.Sprintf("http://%s:%d/nacos/health", nacosHost, nacosPort)
 		resp, err := http.Get(url)
 		if err == nil && resp != nil && resp.StatusCode == http.StatusOK {
-			fmt.Println("Nacos is up and running, starting backend service...")
+			glog.Log.Info("Nacos is up and running, starting backend service...")
 			LoadDubboConfig()
 			break
 		} else {
-			fmt.Printf("Attempt %d: Nacos is not ready yet, waiting...\n", attempt)
+			glog.Log.Infof("Attempt %d: Nacos is not ready yet, waiting...", attempt)
 			attempt++
 			time.Sleep(5 * time.Second)
 		}
 	}
 
 	if attempt > maxAttempts {
-		fmt.Println("Max attempts reached. Nacos may not be available.")
+		glog.Log.Info("Max attempts reached. Nacos may not be available.")
 		LoadDubboConfig()
 		// 在这里可以添加适当的错误处理或退出逻辑
 	} else {

@@ -4,10 +4,9 @@ import (
 	"context"
 
 	"xj/xapi-backend/dbsq"
+	glog "xj/xapi-backend/g_log"
 	"xj/xapi-backend/rpc_api"
 	"xj/xapi-backend/service"
-
-	"dubbo.apache.org/dubbo-go/v3/common/logger"
 )
 
 type UserInfoServerImpl struct {
@@ -15,7 +14,7 @@ type UserInfoServerImpl struct {
 }
 
 func (s *UserInfoServerImpl) GetInvokeUser(ctx context.Context, in *rpc_api.GetInvokeUserReq) (*rpc_api.GetInvokeUserResp, error) {
-	logger.Infof("Dubbo-go GetInvokeUser AccessKey = %s\n", in.AccessKey)
+	glog.Log.Infof("Dubbo-go GetInvokeUser AccessKey = %s", in.AccessKey)
 	data, err := service.GetUserInfoByAccessKey(in.AccessKey)
 	if err != nil {
 		return nil, err
