@@ -5,11 +5,13 @@ import (
 	gconfig "xj/xapi-backend/g_config"
 	gerror "xj/xapi-backend/g_error"
 	ghandle "xj/xapi-backend/g_handle"
+	glog "xj/xapi-backend/g_log"
 	gstore "xj/xapi-backend/g_store"
 	"xj/xapi-backend/utils"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 // 判断已登录状态的中间件
@@ -63,6 +65,10 @@ func AuthMiddleware() gin.HandlerFunc {
 		// 在此可以将 claims 中的用户信息保存到上下文中，供后续处理使用
 		c.Set("user_account", claims["user_account"])
 		c.Set("user_role", claims["user_role"])
+
+		glog.Log.WithFields(logrus.Fields{
+			"pass": true,
+		}).Info("middleware-登录校验")
 
 		c.Next()
 	}
