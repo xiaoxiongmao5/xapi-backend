@@ -23,7 +23,7 @@ func (h *AppHook) Fire(entry *logrus.Entry) error {
 	return nil
 }
 
-func CusLogger() gin.HandlerFunc {
+func LogMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		requestID := utils.CreateUniSessionId() //1365038848
 

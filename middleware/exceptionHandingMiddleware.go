@@ -8,7 +8,7 @@ import (
 )
 
 // 捕获中断业务异常 中间件
-func G_ErrorHandlerMiddleware() gin.HandlerFunc {
+func ExceptionHandingMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 

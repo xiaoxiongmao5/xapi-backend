@@ -84,10 +84,10 @@ func main() {
 	r := gin.New()
 
 	// 使用中间件格式化日志
-	r.Use(middleware.CusLogger())
+	r.Use(middleware.LogMiddleware())
 
 	// 使用中间件处理全局错误拦截
-	r.Use(middleware.G_ErrorHandlerMiddleware())
+	r.Use(middleware.ExceptionHandingMiddleware())
 
 	// 使用中间件来处理跨域请求，并允许携带 Cookie
 	r.Use(middleware.CORSMiddleware())
