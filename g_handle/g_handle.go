@@ -15,7 +15,7 @@ func HandlerUnauthorized(c *gin.Context) {
 }
 
 // 禁止状态 403
-func HandlerNoAuth(c *gin.Context) {
+func HandlerForbidden(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": http.StatusForbidden, "msg": "禁止状态"})
 	c.Abort()
 }

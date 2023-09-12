@@ -24,6 +24,7 @@ type AppConfiguration struct {
 		Port int `json:"port"`
 	} `json:"server"`
 	IPWhiteList []string `json:"ipWhiteList"`
+	IPBlackList []string `json:"ipBlackList"`
 	Nacos       struct {
 		Host string `json:"host"`
 		Port int    `json:"port"`

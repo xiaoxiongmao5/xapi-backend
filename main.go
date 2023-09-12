@@ -92,6 +92,9 @@ func main() {
 	// 使用中间件来处理跨域请求，并允许携带 Cookie
 	r.Use(middleware.CORSMiddleware())
 
+	// 访问控制（黑名单）
+	r.Use(middleware.FilterWithAccessControlInBlackIp())
+
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.POST("/api/invoke", middleware.AuthMiddleware(), controller.InvokeInterface)
 
