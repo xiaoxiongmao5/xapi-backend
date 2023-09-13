@@ -49,10 +49,5 @@ func CalculateLimitOffset(current, pageSize int) (limit, offset int) {
 /** string 转 int64
  */
 func String2Int64(str string) (num int64, err error) {
-	num32, err := strconv.Atoi(str)
-	if err != nil {
-		return
-	}
-	num = int64(num32)
-	return
+	return strconv.ParseInt(str, 10, 64)
 }

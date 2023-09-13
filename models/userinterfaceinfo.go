@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strconv"
 	"time"
 	"xj/xapi-backend/dbsq"
 )
@@ -100,13 +101,20 @@ func Convert2ValidUserInterfaceInfoQueryOfByLeftjoin(i *dbsq.GetFullUserInterfac
 func Convert2ValidTopNOfInterfaceInvokeCountRow(i *dbsq.ListTopNOfInterfaceInvokeCountRow) *ValidTopNOfInterfaceInvokeCountRow {
 	validRow := &ValidTopNOfInterfaceInvokeCountRow{
 		Interfaceinfoid: i.Interfaceinfoid,
-		Name:            i.Name.String,
+		Name:            "",
 	}
 	// 将 Invokecount 转换为 int64 类型
-	if count, ok := i.Invokecount.(int64); ok {
-		validRow.Invokecount = count
-	} else {
-		validRow.Invokecount = 0 // 如果转换失败，可以使用默认值
+	// fmt.Printf("i.Invokecount=%v, type=%T", i.Invokecount, i.Invokecount)	//i.Invokecount=[55], type=[]uint8
+	if strCount, ok := i.Invokecount.([]uint8); ok {
+		countStr := string(strCount)
+		if count, err := strconv.ParseInt(countStr, 10, 64); err == nil {
+			validRow.Invokecount = count
+		}
 	}
+
+	if i.Name.Valid {
+		validRow.Name = i.Name.String
+	}
+
 	return validRow
 }
