@@ -21,7 +21,7 @@ require (
 	github.com/dubbogo/triple v1.1.8
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/sirupsen/logrus v1.9.3
-	github.com/xiaoxiongmao5/xapi-clientsdk v1.0.5
+	github.com/xiaoxiongmao5/xapi-clientsdk v1.0.6
 	google.golang.org/protobuf v1.31.0
 )
 
