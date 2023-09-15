@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// 判断是admin权限的中间件(需要判断已登录状态)
 func AdminMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 从上下文中获取用户信息

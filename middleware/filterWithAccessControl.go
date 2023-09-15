@@ -13,7 +13,7 @@ import (
 // 访问控制（黑名单）
 func FilterWithAccessControlInBlackIp() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		IP_BLACK_LIST := gconfig.AppConfig.IPBlackList
+		IP_BLACK_LIST := gconfig.AppConfigDynamic.IPBlackList
 		requestIP := utils.GetRequestIp(c)
 		flag := true
 		for _, val := range IP_BLACK_LIST {
@@ -39,7 +39,7 @@ func FilterWithAccessControlInBlackIp() gin.HandlerFunc {
 // 访问控制（白名单）
 func FilterWithAccessControlInWhiteIp() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		IP_WHITE_LIST := gconfig.AppConfig.IPWhiteList
+		IP_WHITE_LIST := gconfig.AppConfigDynamic.IPWhiteList
 		requestIP := utils.GetRequestIp(c)
 		flag := false
 		for _, val := range IP_WHITE_LIST {

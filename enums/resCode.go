@@ -35,4 +35,5 @@ const (
 	OfflineInterfaceFailed
 	InvokeInterfaceFailed
 	UpdateInvokeLeftCountFailed
+	UpdateIPRateLimitConfigFailed
 )

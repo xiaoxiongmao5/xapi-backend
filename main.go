@@ -33,6 +33,42 @@ func init() {
 	gstore.InterfaceFuncName = make(map[int64]string)
 
 	loadconfig.LoadInterfaceFuncNameMap()
+
+	// // 加载dubbo配置
+	// if err := loadconfig.LoadDubboConfig(); err != nil {
+	// 	glog.Log.Error("dubbo配置加载失败, err=:", err)
+	// 	panic(err)
+	// } else {
+	// 	glog.Log.Info("dubbo配置加载成功")
+	// }
+
+	// 加载App配置数据
+	if config, err := loadconfig.LoadAppConfig(); err != nil {
+		glog.Log.Error("App配置加载失败, err=:", err)
+		panic(err)
+	} else {
+		glog.Log.Info("App配置加载成功")
+		gconfig.AppConfig = config
+	}
+
+	if configDynamic, err := loadconfig.LoadAppConfigDynamic(); err != nil {
+		glog.Log.Error("App动态配置加载失败, err=:", err)
+		panic(err)
+	} else {
+		glog.Log.Info("App动态配置加载成功")
+		gconfig.AppConfigDynamic = configDynamic
+	}
+
+	if dbcn, err := db.ConnectionPool(gconfig.AppConfig.Database.SavePath); err != nil {
+		glog.Log.Error("数据库连接失败, err=", err)
+		panic(err)
+	} else {
+		glog.Log.Infof("数据库连接成功,savePath=[%s]", gconfig.AppConfig.Database.SavePath)
+		db.MyDB = dbcn
+	}
+
+	// 创建IP限流器
+	middleware.IPLimiter = middleware.NewIPRateLimiter()
 }
 
 //	@title			xApi 项目
@@ -52,33 +88,8 @@ func init() {
 func main() {
 	defer glog.Log.Writer().Close()
 
-	// // 加载dubbo配置
-	// if err := loadconfig.LoadDubboConfig(); err != nil {
-	// 	glog.Log.Error("dubbo配置加载失败, err=:", err)
-	// 	panic(err)
-	// } else {
-	// 	glog.Log.Info("dubbo配置加载成功")
-	// }
-
-	// 加载App配置数据
-	if config, err := loadconfig.LoadAppConfig(); err != nil {
-		glog.Log.Error("App配置加载失败, err=:", err)
-		panic(err)
-	} else {
-		glog.Log.Info("App配置加载成功")
-		gconfig.AppConfig = config
-	}
-
-	if dbcn, err := db.ConnectionPool(gconfig.AppConfig.Database.SavePath); err != nil {
-		glog.Log.Error("数据库连接失败, err=", err)
-		panic(err)
-	} else {
-		glog.Log.Infof("数据库连接成功,savePath=[%s]", gconfig.AppConfig.Database.SavePath)
-		db.MyDB = dbcn
-	}
-
 	// 启动配置文件加载协程
-	go loadconfig.LoadNewAppConfig()
+	go loadconfig.LoadNewAppDynamicConfig()
 	go loadconfig.RegisterServiceToNacos()
 
 	r := gin.New()
@@ -92,6 +103,9 @@ func main() {
 	// 使用中间件来处理跨域请求，并允许携带 Cookie
 	r.Use(middleware.CORSMiddleware())
 
+	// 使用中间件来处理IP并发限流
+	r.Use(middleware.IPRateLimiterMiddleware())
+
 	// 访问控制（黑名单）
 	r.Use(middleware.FilterWithAccessControlInBlackIp())
 
@@ -102,6 +116,7 @@ func main() {
 	router.InterfaceRouter(r)
 	router.UserInterfaceInfoRouter(r)
 	router.AnalysisRouter(r)
+	router.ManagerRouter(r)
 
 	port := fmt.Sprintf(":%d", gconfig.AppConfig.Server.Port)
 	r.Run(port)

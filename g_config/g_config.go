@@ -1,9 +1,5 @@
 package gconfig
 
-import (
-	"sync"
-)
-
 // 用于给用户分配accessKey,secretKey
 const SALT = "xj"
 
@@ -18,15 +14,23 @@ type AppConfiguration struct {
 	Server struct {
 		Port int `json:"port"`
 	} `json:"server"`
-	IPWhiteList []string `json:"ipWhiteList"`
-	IPBlackList []string `json:"ipBlackList"`
-	Nacos       struct {
+	Nacos struct {
 		Host string `json:"host"`
 		Port int    `json:"port"`
 	} `json:"nacos"`
 }
 
+// App配置数据(可动态更新)
+type AppConfigurationDynamic struct {
+	IPWhiteList     []string `json:"ipWhiteList"`
+	IPBlackList     []string `json:"ipBlackList"`
+	RateLimitConfig struct {
+		RequestsPerSecond float64 `json:"requests_per_second"`
+		BucketSize        int     `json:"bucket_size"`
+	} `json:"rateLimitConfig"`
+}
+
 var (
-	AppConfigMutex sync.Mutex
-	AppConfig      *AppConfiguration
+	AppConfig        *AppConfiguration
+	AppConfigDynamic *AppConfigurationDynamic
 )
