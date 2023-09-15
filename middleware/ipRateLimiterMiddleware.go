@@ -47,7 +47,7 @@ func IPRateLimiterMiddleware() gin.HandlerFunc {
 		limiter := IPLimiter.GetLimiter(ip)
 
 		if !limiter.Allow() {
-			c.JSON(http.StatusTooManyRequests, gin.H{"message": "Rate limit exceeded"})
+			c.JSON(http.StatusOK, gin.H{"result": http.StatusTooManyRequests, "msg": "Rate limit exceeded"})
 			c.Abort()
 			return
 		}
@@ -60,7 +60,6 @@ func IPRateLimiterMiddleware() gin.HandlerFunc {
 func UpdateIPRateLimitConfig(ip string, requestsPerSecond float64, bucketSize int) error {
 	// 在此处进行配置验证，确保新的配置是有效的
 	if requestsPerSecond <= 0 || bucketSize <= 0 {
-		// c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid configuration"})
 		return errors.New("Invalid configuration")
 	}
 

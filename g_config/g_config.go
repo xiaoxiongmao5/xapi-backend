@@ -24,6 +24,7 @@ type AppConfiguration struct {
 type AppConfigurationDynamic struct {
 	IPWhiteList     []string `json:"ipWhiteList"`
 	IPBlackList     []string `json:"ipBlackList"`
+	IPAdminList     []string `json:"ipAdminList"`
 	RateLimitConfig struct {
 		RequestsPerSecond float64 `json:"requests_per_second"`
 		BucketSize        int     `json:"bucket_size"`

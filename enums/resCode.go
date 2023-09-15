@@ -1,6 +1,7 @@
 package enums
 
 type ResCodeCommon int
+type ResCodeOfManage int
 type ResCodeOfUser int
 type ResCodeOfInterface int
 
@@ -17,16 +18,21 @@ const (
 )
 
 const (
+	// ResCodeOfManage
+	UpdateIPRateLimitConfigFailed ResCodeOfManage = 2000
+)
+
+const (
 	// ResCodeOfUser
-	UserNotExist     ResCodeOfUser = 2001
-	UserExist                      // 2002
-	CreateUserFailed               // 2003
+	UserNotExist     ResCodeOfUser = 3000
+	UserExist                      // 3001
+	CreateUserFailed               // 3002
 	UserPasswordError
 )
 
 const (
 	// ResCodeOfInterface
-	InterfaceNotExist ResCodeOfInterface = 3000
+	InterfaceNotExist ResCodeOfInterface = 4000
 	ListInterfaceFailed
 	CreateInterfaceFailed
 	UpdateInterfaceFailed
@@ -35,5 +41,4 @@ const (
 	OfflineInterfaceFailed
 	InvokeInterfaceFailed
 	UpdateInvokeLeftCountFailed
-	UpdateIPRateLimitConfigFailed
 )

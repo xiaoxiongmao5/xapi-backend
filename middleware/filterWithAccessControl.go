@@ -25,7 +25,7 @@ func FilterWithAccessControlInBlackIp() gin.HandlerFunc {
 		glog.Log.WithFields(logrus.Fields{
 			"requestIP": requestIP,
 			"pass":      flag,
-		}).Info("middleware-访问控制-黑名单")
+		}).Info("middleware-访问控制-ip黑名单")
 
 		if flag {
 			c.Next()
@@ -51,7 +51,33 @@ func FilterWithAccessControlInWhiteIp() gin.HandlerFunc {
 		glog.Log.WithFields(logrus.Fields{
 			"requestIP": requestIP,
 			"pass":      flag,
-		}).Info("middleware-访问控制-白名单")
+		}).Info("middleware-访问控制-ip白名单")
+
+		if flag {
+			c.Next()
+		} else {
+			ghandle.HandlerForbidden(c)
+			return
+		}
+	}
+}
+
+// 访问控制（admin管理员ip）
+func FilterWithAccessControlInAdminIp() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		IP_LIST := gconfig.AppConfigDynamic.IPAdminList
+		requestIP := utils.GetRequestIp(c)
+		flag := false
+		for _, val := range IP_LIST {
+			if val == requestIP {
+				flag = true
+			}
+		}
+
+		glog.Log.WithFields(logrus.Fields{
+			"requestIP": requestIP,
+			"pass":      flag,
+		}).Info("middleware-访问控制-ip管理员admin")
 
 		if flag {
 			c.Next()

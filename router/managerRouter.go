@@ -8,7 +8,7 @@ import (
 )
 
 func ManagerRouter(r *gin.Engine) {
-	router := r.Group("/manage", middleware.AuthMiddleware(), middleware.AdminMiddleware())
+	router := r.Group("/manage", middleware.FilterWithAccessControlInAdminIp())
 	router.GET("/config/ratelimit", controller.GetIPRateLimitConfig)
 	router.PUT("/config/ratelimit", controller.UpdateIPRateLimitConfig)
 }
