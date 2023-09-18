@@ -18,9 +18,20 @@ ORDER BY id
 LIMIT ?
 OFFSET ?;
 
+-- name: ListPageOnlineInterfaces :many
+SELECT * FROM xapi.`interface_info`
+WHERE isDelete = 0 AND `status` = 1
+ORDER BY id
+LIMIT ?
+OFFSET ?;
+
 -- name: GetInterfaceListCount :one
 select COUNT(*) FROM xapi.`interface_info`
 where isDelete = 0;
+
+-- name: GetOnlineInterfaceListCount :one
+select COUNT(*) FROM xapi.`interface_info`
+where isDelete = 0 AND `status` = 1;
 
 -- name: CreateInterface :execresult
 insert into xapi.`interface_info` (

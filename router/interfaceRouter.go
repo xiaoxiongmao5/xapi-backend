@@ -13,6 +13,7 @@ func InterfaceRouter(r *gin.Engine) {
 	router.GET("/:id", controller.GetInterfaceInfoById)
 	router.GET("/list", controller.ListInterface)
 	router.GET("/pagelist", controller.PageListInterface)
+	router.GET("/pagelist/online", controller.PageListOnlineInterface)
 	router.POST("/register", controller.CreateInterface)
 	router.PUT("/update", controller.UpdateInterface)
 	router.DELETE("/delete", controller.DeleteInterface)

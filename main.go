@@ -30,9 +30,7 @@ func init() {
 	}
 
 	gstore.TokenMemoryStore = make(map[string]bool)
-	gstore.InterfaceFuncName = make(map[int64]string)
 
-	loadconfig.LoadInterfaceFuncNameMap()
 
 	// // 加载dubbo配置
 	// if err := loadconfig.LoadDubboConfig(); err != nil {

@@ -2,13 +2,14 @@ package controller
 
 import (
 	"fmt"
+	"net/http"
 	"reflect"
 	"strconv"
 	"xj/xapi-backend/enums"
+	gconfig "xj/xapi-backend/g_config"
 	gerror "xj/xapi-backend/g_error"
 	ghandle "xj/xapi-backend/g_handle"
 	glog "xj/xapi-backend/g_log"
-	gstore "xj/xapi-backend/g_store"
 	"xj/xapi-backend/models"
 	"xj/xapi-backend/service"
 
@@ -118,6 +119,39 @@ func PageListInterface(c *gin.Context) {
 	}
 
 	ghandle.HandlerSuccess(c, "接口列表获取成功", gin.H{
+		"record": list,
+		"total":  count,
+	})
+}
+
+//	@Summary		分页获得已发布接口列表
+//	@Description	分页获取已发布接口列表
+//	@Tags			接口相关
+//	@Accept			application/x-www-form-urlencoded
+//	@Produce		application/json
+//	@Param			pageSize	query		int		true	"pageSize"
+//	@Param			current		query		int		true	"current"
+//	@Success		200			{object}	object	"接口列表"
+//	@Router			/interface/pagelist/online [get]
+func PageListOnlineInterface(c *gin.Context) {
+	pageSize, err1 := strconv.Atoi(c.Query("pageSize"))
+	current, err2 := strconv.Atoi(c.Query("current"))
+	if err1 != nil || err2 != nil {
+		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "参数错误"))
+		return
+	}
+	list, err := service.PageListOnlineInterfaces(current, pageSize)
+	if err != nil {
+		c.Error(gerror.NewAbortErr(int(enums.ListInterfaceFailed), "已发布接口列表信息获取失败"))
+		return
+	}
+	count, err := service.GetOnlineInterfaceListCount()
+	if err != nil {
+		c.Error(gerror.NewAbortErr(int(enums.ListInterfaceFailed), "已发布接口列表总数获取失败"))
+		return
+	}
+
+	ghandle.HandlerSuccess(c, "已发布接口列表获取成功", gin.H{
 		"record": list,
 		"total":  count,
 	})
@@ -303,19 +337,25 @@ func InvokeInterface(c *gin.Context) {
 	}
 
 	// new一个客户端SDK
-	clientsdk := client.NewClient(userInfo.Accesskey, userInfo.Secretkey)
-
-	// 根据ID值从全局map中获取函数名
-	funcName, res := gstore.InterfaceFuncName[params.ID]
-	if res == false {
-		c.Error(gerror.NewAbortErr(int(enums.ParameterError), "接口暂未接入完成，敬请期待"))
-		return
+	var clientsdk *client.Client
+	if gconfig.AppConfigDynamic.Gatewayhost == "" {
+		clientsdk = client.NewClient(
+			client.SetAkSk(userInfo.Accesskey, userInfo.Secretkey),
+		)
+	} else {
+		clientsdk = client.NewClient(
+			client.SetAkSk(userInfo.Accesskey, userInfo.Secretkey),
+			client.UseGateway(gconfig.AppConfigDynamic.Gatewayhost),
+		)
 	}
+
+	// 根据函数名命名协议 获得函数名
+	funcName := fmt.Sprintf("Api_%d", params.ID)
 
 	// 准备要传递的参数
 	reflectArgs := make([]reflect.Value, 2)
 	reflectArgs[0] = reflect.ValueOf(params.Requestparams)
-	reflectArgs[1] = reflect.ValueOf(strconv.FormatInt(params.ID, 10))
+	reflectArgs[1] = reflect.ValueOf("{}")
 
 	// 利用反射调用对应的函数
 	method := reflect.ValueOf(clientsdk).MethodByName(funcName)
@@ -325,41 +365,41 @@ func InvokeInterface(c *gin.Context) {
 	}
 	result := method.Call(reflectArgs)
 	// 如果没有返回值或提取值无效，返回错误
-	if len(result) < 4 {
+	if len(result) < 2 {
 		c.Error(gerror.NewAbortErr(int(enums.InvokeInterfaceFailed), "调用接口返回值格式校验失败"))
 		return
 	}
 	flag := true
-	// 提取 statusCode
-	statusCode, ok := result[0].Interface().(int)
-	if !ok {
-		flag = false
-	}
-	// 提取 contentType
-	contentType, ok := result[1].Interface().(string)
-	if !ok {
-		flag = false
-	}
+	// // 提取 statusCode
+	// statusCode, ok := result[0].Interface().(int)
+	// if !ok {
+	// 	flag = false
+	// }
+	// // 提取 contentType
+	// contentType, ok := result[1].Interface().(string)
+	// if !ok {
+	// 	flag = false
+	// }
 	// 提取 bodyBytes
-	bodyBytes, ok := result[2].Interface().([]byte)
+	bodyBytes, ok := result[0].Interface().([]byte)
 	if !ok {
 		flag = false
 	}
 	// 提取 error
-	bodyError, ok := result[3].Interface().(error)
+	bodyError, ok := result[1].Interface().(error)
 	if ok {
 		flag = false
 	}
 
 	glog.Log.WithFields(logrus.Fields{
-		"res[0]statusCode":  fmt.Sprintf("%v", statusCode),
-		"res[0]type":        fmt.Sprintf("%T", statusCode),
-		"res[1]contentType": fmt.Sprintf("%v", contentType),
-		"res[1]type":        fmt.Sprintf("%T", contentType),
-		"res[2]bodyBytes":   fmt.Sprintf("%v", string(bodyBytes)),
-		"res[2]type":        fmt.Sprintf("%T", bodyBytes),
-		"res[3]bodyError":   fmt.Sprintf("%v", bodyError),
-		"res[3]type":        fmt.Sprintf("%T", bodyError),
+		// "res[0]statusCode":  fmt.Sprintf("%v", statusCode),
+		// "res[0]type":        fmt.Sprintf("%T", statusCode),
+		// "res[1]contentType": fmt.Sprintf("%v", contentType),
+		// "res[1]type":        fmt.Sprintf("%T", contentType),
+		"res[2]bodyBytes": fmt.Sprintf("%v", string(bodyBytes)),
+		"res[2]type":      fmt.Sprintf("%T", bodyBytes),
+		"res[3]bodyError": fmt.Sprintf("%v", bodyError),
+		"res[3]type":      fmt.Sprintf("%T", bodyError),
 	}).Info("解析调用接口返回数据")
 
 	if !flag {
@@ -372,7 +412,38 @@ func InvokeInterface(c *gin.Context) {
 		return
 	}
 
+	// var responseMap map[string]interface{}
+
+	// // 解码bodyBytes中的JSON数据
+	// var bodyData map[string]interface{}
+	// if err := json.Unmarshal(bodyBytes, &bodyData); err != nil {
+	// 	// 处理JSON解码错误
+	// 	glog.Log.Errorln("解码bodyBytes中的JSON数据 JSON decoding error", err.Error())
+	// 	responseMap = map[string]interface{}{
+	// 		"result": 0,
+	// 		"msg":    "调用成功",
+	// 		"data":   string(bodyBytes),
+	// 	}
+	// } else {
+	// 	// 创建一个包装响应的map，将result和data字段添加到bodyData中
+	// 	responseMap = map[string]interface{}{
+	// 		"result": 0,
+	// 		"msg":    "调用成功",
+	// 		"data":   bodyData,
+	// 	}
+	// }
+
+	// // 将map转换为JSON格式
+	// responseJSON, err := json.Marshal(responseMap)
+	// if err != nil {
+	// 	// 处理JSON转换错误
+	// 	glog.Log.Errorln("将responseMap转换为responseJSON格式 JSON conversion error", err.Error())
+	//  c.Error(gerror.NewAbortErr(int(enums.InvokeInterfaceFailed), "将responseMap转换为responseJSON格式失败"))
+	// 	return
+	// }
+
 	// 使用提取的值调用 c.Data 将响应体内容直接返回给前端
-	c.Data(statusCode, contentType, bodyBytes)
+	c.Data(http.StatusOK, fullUserInterfaceInfo.Responseheader, bodyBytes)
+
 	return
 }

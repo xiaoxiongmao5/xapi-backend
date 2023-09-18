@@ -103,6 +103,28 @@ func GetInterfaceListCount() (int64, error) {
 	return q.GetInterfaceListCount(ctx)
 }
 
+// 分页获得已发布的接口列表（status=1）
+func PageListOnlineInterfaces(current, pageSize int) ([]*models.ValidInterfaceInfo, error) {
+	limit, offset := utils.CalculateLimitOffset(current, pageSize)
+	q := dbsq.New(db.MyDB)
+	ctx := context.Background()
+	res, error := q.ListPageOnlineInterfaces(ctx, &dbsq.ListPageOnlineInterfacesParams{
+		Limit:  int32(limit),
+		Offset: int32(offset),
+	})
+	if error != nil {
+		return nil, error
+	}
+	return ConvertSliceToValidXapiInterfaceInfo(res), nil
+}
+
+// 获得已发布的接口列表总数（status=1）
+func GetOnlineInterfaceListCount() (int64, error) {
+	q := dbsq.New(db.MyDB)
+	ctx := context.Background()
+	return q.GetOnlineInterfaceListCount(ctx)
+}
+
 // 发布接口
 func OnlineInterfaceStatus(id int64) error {
 	q := dbsq.New(db.MyDB)

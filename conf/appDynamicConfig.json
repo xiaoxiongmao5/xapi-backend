@@ -6,5 +6,7 @@
   "rateLimitConfig": {
     "requests_per_second": 10,
     "bucket_size": 5
-  }
+  },
+  "gatewayhost":"http://localhost:8080/api/invoke",
+  "gatewayhost_online":"http://xapi-gateway.com:8080/api/invoke"
 }
