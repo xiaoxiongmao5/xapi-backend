@@ -10,7 +10,12 @@ import (
 )
 
 func GetUserInterfaceInfoByUserIdAndInterfaceId(interfaceId, userId int64) (*dbsq.XapiUserInterfaceInfo, error) {
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	return q.GetUserInterfaceInfoByUserIdAndInterfaceId(ctx, &dbsq.GetUserInterfaceInfoByUserIdAndInterfaceIdParams{
 		Interfaceinfoid: interfaceId,
@@ -19,7 +24,12 @@ func GetUserInterfaceInfoByUserIdAndInterfaceId(interfaceId, userId int64) (*dbs
 }
 
 func GetFullUserInterfaceInfoByUserIdAndInterfaceId(interfaceId, userId int64) (*models.ValidUserInterfaceInfo, error) {
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	data, err := q.GetFullUserInterfaceInfoByUserIdAndInterfaceId(ctx, &dbsq.GetFullUserInterfaceInfoByUserIdAndInterfaceIdParams{
 		Interfaceinfoid: interfaceId,
@@ -39,7 +49,12 @@ func InvokeCount(interfaceId, userId int64) (sql.Result, error) {
 		return nil, errors.New("用户或接口不存在")
 	}
 	// 计数变更
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	param := &dbsq.InvokeUserInterfaceInfoParams{
 		Interfaceinfoid: interfaceId,
@@ -52,7 +67,12 @@ func InvokeCount(interfaceId, userId int64) (sql.Result, error) {
  */
 func UpdateInvokeLeftCount(interfaceId, userId int64, leftNum int32) (sql.Result, error) {
 	// 查看该用户是否已经开通
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	data, err := q.GetUserInterfaceInfoByUserIdAndInterfaceId(ctx, &dbsq.GetUserInterfaceInfoByUserIdAndInterfaceIdParams{
 		Userid:          userId,
@@ -77,7 +97,12 @@ func UpdateInvokeLeftCount(interfaceId, userId int64, leftNum int32) (sql.Result
 /** 获得接口调用次数的统计信息，Top N
  */
 func ListTopNOfInterfaceInvokeCount(limit int32) ([]*dbsq.ListTopNOfInterfaceInvokeCountRow, error) {
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	return q.ListTopNOfInterfaceInvokeCount(ctx, limit)
 }

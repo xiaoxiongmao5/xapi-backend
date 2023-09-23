@@ -17,23 +17,36 @@ import (
 
 // 根据Id 获取用户信息
 func GetUserInfoById(id int64) (*dbsq.User, error) {
-	// todo 这里是否需要new 新的链接地址
-	q := dbsq.New(db.MyDB)
-	// 创建一个 context.Context 对象
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	return q.GetUserInfoById(ctx, id)
 }
 
 // 根据userAccount 获得用户信息
 func GetUserInfoByUserAccount(userAccount string) (*dbsq.User, error) {
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	return q.GetUserInfoByUniUserAccount(ctx, userAccount)
 }
 
 // 根据accessKey 获得用户信息
 func GetUserInfoByAccessKey(accessKey string) (*dbsq.User, error) {
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	return q.GetUserInfoByUniAccessKey(ctx, accessKey)
 }
@@ -75,7 +88,12 @@ func CreateUser(param *models.UserRegisterParams) (sql.Result, error) {
 		Accesskey:    accessKey,
 		Secretkey:    secretKey,
 	}
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	return q.CreateUser(ctx, params)
 }

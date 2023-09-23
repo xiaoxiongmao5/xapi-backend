@@ -12,7 +12,12 @@ import (
 
 // 根据接口ID 获得接口信息
 func GetInterfaceInfoById(id int64) (*models.ValidInterfaceInfo, error) {
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	data, err := q.GetInterfaceInfoById(ctx, id)
 	if err != nil {
@@ -24,7 +29,12 @@ func GetInterfaceInfoById(id int64) (*models.ValidInterfaceInfo, error) {
 
 // 根据 host+url+method 获得接口信息
 func GetInterfaceInfoByUniFullApi(host, url, method string) (*models.ValidInterfaceInfo, error) {
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	param := &dbsq.GetInterfaceInfoByUniFullApiParams{
 		Host:   host,
@@ -42,7 +52,12 @@ func GetInterfaceInfoByUniFullApi(host, url, method string) (*models.ValidInterf
 // 注册一条接口
 func CreateInterface(param *models.CreateInterfaceParams) (sql.Result, error) {
 	nparam := models.Convert2CreateInterfaceParams(param)
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	return q.CreateInterface(ctx, nparam)
 }
@@ -50,14 +65,24 @@ func CreateInterface(param *models.CreateInterfaceParams) (sql.Result, error) {
 // 更新接口信息
 func UpdateInterface(param *models.UpdateInterfaceParams) error {
 	nparam := models.Convert2UpdateInterfaceParams(param)
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	return q.UpdateInterface(ctx, nparam)
 }
 
 // 删除一条接口
 func DeleteInterface(id int64) error {
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	return q.DeleteInterface(ctx, id)
 }
@@ -72,7 +97,12 @@ func ConvertSliceToValidXapiInterfaceInfo(slice []*dbsq.XapiInterfaceInfo) []*mo
 
 // 获得所有接口列表
 func AllListInterfaces() ([]*models.ValidInterfaceInfo, error) {
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	res, error := q.ListInterfaces(ctx)
 	if error != nil {
@@ -84,7 +114,12 @@ func AllListInterfaces() ([]*models.ValidInterfaceInfo, error) {
 // 分页获得接口列表
 func PageListInterfaces(current, pageSize int) ([]*models.ValidInterfaceInfo, error) {
 	limit, offset := utils.CalculateLimitOffset(current, pageSize)
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	res, error := q.ListPageInterfaces(ctx, &dbsq.ListPageInterfacesParams{
 		Limit:  int32(limit),
@@ -98,7 +133,12 @@ func PageListInterfaces(current, pageSize int) ([]*models.ValidInterfaceInfo, er
 
 // 获得接口列表总条数
 func GetInterfaceListCount() (int64, error) {
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return 0, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	return q.GetInterfaceListCount(ctx)
 }
@@ -106,7 +146,12 @@ func GetInterfaceListCount() (int64, error) {
 // 分页获得已发布的接口列表（status=1）
 func PageListOnlineInterfaces(current, pageSize int) ([]*models.ValidInterfaceInfo, error) {
 	limit, offset := utils.CalculateLimitOffset(current, pageSize)
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	res, error := q.ListPageOnlineInterfaces(ctx, &dbsq.ListPageOnlineInterfacesParams{
 		Limit:  int32(limit),
@@ -120,14 +165,24 @@ func PageListOnlineInterfaces(current, pageSize int) ([]*models.ValidInterfaceIn
 
 // 获得已发布的接口列表总数（status=1）
 func GetOnlineInterfaceListCount() (int64, error) {
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return 0, err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	return q.GetOnlineInterfaceListCount(ctx)
 }
 
 // 发布接口
 func OnlineInterfaceStatus(id int64) error {
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	return q.UpdateInterfaceStatus(ctx, &dbsq.UpdateInterfaceStatusParams{
 		Status: int32(enums.InterfaceStatusOnline),
@@ -137,7 +192,12 @@ func OnlineInterfaceStatus(id int64) error {
 
 // 下线接口
 func OfflineInterfaceStatus(id int64) error {
-	q := dbsq.New(db.MyDB)
+	conn, err := db.GetConn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	q := dbsq.New(conn)
 	ctx := context.Background()
 	param := &dbsq.UpdateInterfaceStatusParams{
 		Status: int32(enums.InterfaceStatusOffline),

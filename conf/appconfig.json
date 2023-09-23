@@ -1,7 +1,7 @@
 {
   "database": {
-    "savePath1": "user:pwd@tcp(mysql)/xapi?charset=utf8&parseTime=true",
-    "savePath": "root:@/xapi?charset=utf8&parseTime=true"
+    "savePath": "user:pwd@tcp(mysql)/xapi?charset=utf8&parseTime=true",
+    "maxOpenConns": 10
   },
   "server": {
     "port": 8090

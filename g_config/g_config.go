@@ -9,7 +9,8 @@ const SecretKey = "your-secret-key"
 // App配置数据
 type AppConfiguration struct {
 	Database struct {
-		SavePath string `json:"savePath"`
+		SavePath     string `json:"savePath"`
+		MaxOpenConns int    `json:"maxOpenConns"`
 	} `json:"database"`
 	Server struct {
 		Port int `json:"port"`

@@ -31,7 +31,6 @@ func init() {
 
 	gstore.TokenMemoryStore = make(map[string]bool)
 
-
 	// // 加载dubbo配置
 	// if err := loadconfig.LoadDubboConfig(); err != nil {
 	// 	glog.Log.Error("dubbo配置加载失败, err=:", err)
@@ -57,14 +56,6 @@ func init() {
 		gconfig.AppConfigDynamic = configDynamic
 	}
 
-	if dbcn, err := db.ConnectionPool(gconfig.AppConfig.Database.SavePath); err != nil {
-		glog.Log.Error("数据库连接失败, err=", err)
-		panic(err)
-	} else {
-		glog.Log.Infof("数据库连接成功,savePath=[%s]", gconfig.AppConfig.Database.SavePath)
-		db.MyDB = dbcn
-	}
-
 	// 创建IP限流器
 	middleware.IPLimiter = middleware.NewIPRateLimiter()
 }
@@ -85,6 +76,14 @@ func init() {
 
 func main() {
 	defer glog.Log.Writer().Close()
+
+	// 初始化数据库连接池
+	var err error
+	db.MyDB, err = db.ConnectionPool(gconfig.AppConfig.Database.SavePath, gconfig.AppConfig.Database.MaxOpenConns)
+	if err != nil {
+		panic(err)
+	}
+	defer db.MyDB.Close()
 
 	// 启动配置文件加载协程
 	go loadconfig.LoadNewAppDynamicConfig()
